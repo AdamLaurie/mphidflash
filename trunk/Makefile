@@ -7,11 +7,13 @@ ifeq ($(shell uname -s),Darwin)
   OBJS    += usb-osx.o
   CFLAGS   = -fast
   LDFLAGS  = -Wl,-framework,IOKit,-framework,CoreFoundation
+  SYSTEM = osx
 else
 # Rules for Linux, etc.
   OBJS    += usb-linux.o
   CFLAGS   = -O3 
   LDFLAGS  = -lhid -lusb
+  SYSTEM = linux
 endif
 
 all: $(EXECS)
@@ -31,4 +33,7 @@ install: mphidflash
 
 clean:
 	rm -f $(EXECS) *.o core
+
+bindist: $(EXECS)
+	tar cvzf mphidflash-bin-$(SYSTEM).tar.gz README.txt CHANGELOG COPYING $(EXECS)
 

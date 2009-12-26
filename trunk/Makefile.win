@@ -17,3 +17,6 @@ mphidflash.exe: $(OBJS)
 clean:
 	rm -f $(EXECS) *.o core
 
+bindist: $(EXECS)
+	zip mphidflash-bin-win.zip README.txt CHANGELOG COPYING $(EXECS)
+
