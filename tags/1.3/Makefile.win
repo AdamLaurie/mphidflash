@@ -1,0 +1,22 @@
+CC    = i586-mingw32msvc-gcc
+EXECS = mphidflash.exe
+OBJS  = main.o hex.o usb-windows.o
+CFLAGS = -DWIN
+LDFLAGS = -lhid -lsetupapi 
+
+all: $(EXECS)
+
+*.o: mphidflash.h
+
+.c.o:
+	$(CC) $(CFLAGS) -c $*.c
+ 
+mphidflash.exe: $(OBJS)
+	$(CC) $(OBJS) $(LDFLAGS) -o mphidflash.exe
+
+clean:
+	rm -f $(EXECS) *.o core
+
+bindist: $(EXECS)
+	zip mphidflash-bin-win.zip README.txt CHANGELOG COPYING $(EXECS)
+

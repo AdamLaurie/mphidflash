@@ -1,0 +1,12 @@
+2009-12-26  1.3  Thomas Fischl, Dominik Fisch (www.fundf.net)
+	* Renamed tool. New name is 'mphidflash'.
+	* Added windows support (usb-windows.c)
+
+2009-04-16  1.2  Phillip Burgess
+	* Bug fix for non-Intel and 64-bit platforms.
+ 
+2009-03-16  1.1  Phillip Burgess
+	* Added linux support (usb-linux.c)
+
+2009-02-19  1.0  Phillip Burgess 
+	* Initial implementation of 'ubw32' 
