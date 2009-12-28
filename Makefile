@@ -10,9 +10,9 @@ ifeq ($(shell uname -s),Darwin)
   SYSTEM = osx
 else
 # Rules for Linux, etc.
-  OBJS    += usb-linux.o
+  OBJS    += usb-libusb.o
   CFLAGS   = -O3 
-  LDFLAGS  = -lhid -lusb
+  LDFLAGS  = -lusb
   SYSTEM = linux
 endif
 
