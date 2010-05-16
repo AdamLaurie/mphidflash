@@ -1,3 +1,8 @@
+2010-05-15  Thomas Fischl (www.fundf.net)
+	* Send PROGRAM_COMPLETE before any non-contiguous address. Patch by Erik Gustavsson.
+	* Added support for PIC24. Based on patch by Erik Gustavsson.
+	* Added support for PIC32. Based on patch by Hannes Brockmann (www.pironex.de).
+
 2009-12-28  Thomas Fischl, Dominik Fisch (www.fundf.net)
 	* Added support for libusb without dependencies to libhid 
 

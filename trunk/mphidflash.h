@@ -79,6 +79,12 @@
 #define TypeConfigWords   0x03
 #define	TypeEndOfTypeList 0xFF
 
+/* Device family */
+#define DEVICE_FAMILY_PIC18 0x01
+#define DEVICE_FAMILY_PIC24 0x02
+#define DEVICE_FAMILY_PIC32 0x03
+
+
 /* Error codes returned by various functions */
 
 typedef enum
@@ -111,6 +117,7 @@ extern ErrorCode
 	usbWrite(char,char);
 extern void
 	hexClose(void),
-	usbClose(void);
+	usbClose(void),
+	hexSetBytesPerAddress(unsigned char);
 
 #endif /* _MPHIDFLASH_H_ */
