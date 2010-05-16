@@ -153,18 +153,41 @@ int main(
 
 		/* And start doing stuff... */
 
-		(void)printf("USB HID device found");
+		(void)printf("USB HID device found\n");
 		usbBuf[0] = QUERY_DEVICE;
 		if(ERR_NONE == (status = usbWrite(1,1))) {
 			int j;
 
-			for(i=1,j=3;usbBuf[j]!=TypeEndOfTypeList;j+=9,i++) {
-			  if(usbBuf[j] == TypeProgramMemory)
-			    (void)printf(": %d bytes free",bufRead32(j + 5));
+                        (void)printf("  Device family: ");
+			unsigned char deviceFamily = usbBuf[2];
+			switch (deviceFamily)
+			{
+				case DEVICE_FAMILY_PIC18:
+					hexSetBytesPerAddress(1);
+					(void)printf("PIC18\n");
+					break;
+				case DEVICE_FAMILY_PIC24:
+					hexSetBytesPerAddress(2);
+					(void)printf("PIC24\n");
+					break;
+				case DEVICE_FAMILY_PIC32:
+					hexSetBytesPerAddress(1);
+					(void)printf("PIC32\n");
+					break;
+				default:
+					hexSetBytesPerAddress(1);
+					(void)printf("Unknown. Bytes per address set to 1.\n");
+					break;
 			}
 
+                        (void)printf("  Program memory: ");
+			for(i=1,j=3;usbBuf[j]!=TypeEndOfTypeList;j+=9,i++) {
+			  if(usbBuf[j] == TypeProgramMemory)
+			    (void)printf("%d bytes free. ",bufRead32(j + 5));
+			}
+			(void)putchar('\n');
+
 		}
-		(void)putchar('\n');
 
 		if((ERR_NONE == status) && (actions & ACTION_UNLOCK)) {
 			(void)puts("Unlocking configuration memory...");
