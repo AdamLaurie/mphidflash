@@ -73,6 +73,11 @@ ErrorCode usbOpen(
 	matcher.product_id = productID;
 	matcher.matcher_fn = NULL;
 
+	if (debugLevel >= DEBUG_USB) {
+		hid_set_debug(HID_DEBUG_ALL);
+		hid_set_usb_debug(HID_DEBUG_ALL);
+	}
+
 	if(HID_RET_SUCCESS == hid_init()) {
 		status = ERR_USB_INIT2;
 		if((hid = hid_new_HIDInterface())) {
