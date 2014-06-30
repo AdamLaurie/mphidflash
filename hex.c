@@ -43,24 +43,12 @@
 #include <sys/stat.h>
 #include "mphidflash.h"
 
-static char          *hexFileData = NULL;  /* Memory-mapped hex file data */
-static char          *hexPlusOne;          /* Saves a lot of "+1" math    */
-static int            hexFd;               /* Open hex file descriptor    */
-static size_t         hexFileSize;         /* Save for use by munmap()    */
-static unsigned char  hexBuf[56];          /* Data read/written to USB    */
-extern unsigned char *usbBuf;              /* In usb code                 */
-unsigned char         bytesPerAddress = 1; /* Bytes in flash per address  */
-
-/****************************************************************************
- Function    : hexSetBytesPerAddress
- Description : Sets given byte width
- Parameters  : unsigned char  Bytes per address
- Returns     : Nothing (void)
- ****************************************************************************/
-void hexSetBytesPerAddress(unsigned char bytes)
-{
-	bytesPerAddress = bytes;
-}
+static char          *hexFileData = NULL; /* Memory-mapped hex file data */
+static char          *hexPlusOne;         /* Saves a lot of "+1" math    */
+static int            hexFd;              /* Open hex file descriptor    */
+static size_t         hexFileSize;        /* Save for use by munmap()    */
+static unsigned char  hexBuf[56];         /* Data read/written to USB    */
+extern unsigned char *usbBuf;           /* In usb code                 */
 
 /****************************************************************************
  Function    : hexOpen
@@ -111,6 +99,24 @@ ErrorCode hexOpen(char * const filename)
 	return status;
 }
 
+static int verifyBlock( unsigned int *addr, char *len )
+{
+	int i, isA, isL, MA, ML, ret = 0;
+	for ( i = 0; i < devQuery.memBlocks; i++ )
+	{
+		if ( !devQuery.mem[ i ].Type ) continue;
+		MA = devQuery.mem[ i ].Address;
+		ML = devQuery.mem[ i ].Length;
+		isA = ( *addr >= MA ) && ( *addr < MA + ML );
+		isL = ( *addr + *len > MA ) && ( *addr + *len <= MA + ML );
+		if ( !isA && !isL ) continue;
+		if ( isA && isL ) return 0;
+		if ( isA ) *len = ( MA + ML ) - *addr;
+		if ( isL ) { *len = ( *addr + *len ) - MA; *addr = MA; }
+		return 0;
+	}
+	return 1;
+}
 
 /****************************************************************************
  Function    : atoh (inline pseudo-function)
@@ -140,9 +146,9 @@ ErrorCode hexOpen(char * const filename)
                              from usbWrite();
  ****************************************************************************/
 static ErrorCode issueBlock(
-  const unsigned int  addr,
-  const char          len,
-  const char          verify)
+  unsigned int  addr,
+  char          len,
+  char          verify)
 {
 	ErrorCode status;
 
@@ -152,15 +158,22 @@ static ErrorCode issueBlock(
 	(void)putchar('.'); fflush(stdout);
 #endif
 
-	/* Short data packets need flushing */
-	if (len == 0) {
-		DEBUGMSG("Completing");
-		usbBuf[0] = PROGRAM_COMPLETE;
-		status    = usbWrite(1,0);
-		return status;
+	// check device memory blocks
+	if ( verifyBlock( &addr, &len ) ) { 
+#ifdef DEBUG	
+		printf( "Skip data on address %04x with length %d\n", addr, len ); 
+#endif
+		return ERR_NONE; 
+	}
+	// length must be even
+	if ( len & 1 ) {
+#ifdef DEBUG	
+		printf( "Add one byte to data on address %04x with length %d\n", addr, len ); 
+#endif
+		hexBuf[ len++ ] = 0xff;
 	}
 
-	bufWrite32(usbBuf, 1, addr / bytesPerAddress);
+	bufWrite32(usbBuf,1,addr);
 	usbBuf[5] = len;
 
 	if(verify) {

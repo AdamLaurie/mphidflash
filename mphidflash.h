@@ -8,9 +8,13 @@
                  * Bug fix for non-Intel and 64-bit platforms.
                2009-12-26  Thomas Fischl, Dominik Fisch (www.FundF.net)
                  * Renamed 'ubw32' to 'mphidflash'
+               2010-12-28  Petr Olivka
+                 * program and verify only data for defined memory areas
+                 * send only even length of data to PIC
                
  License     : Copyright (C) 2009 Phillip Burgess
                Copyright (C) 2009 Thomas Fischl, Dominik Fisch (www.FundF.net)
+               Copyright (C) 2010 Petr Olivka
 
                This file is part of 'mphidflash' program.
 
@@ -34,7 +38,7 @@
 #define _MPHIDFLASH_H_
 
 #define VERSION_MAIN 1
-#define VERSION_SUB 3
+#define VERSION_SUB 4
 
 #ifdef DEBUG
 #define DEBUGMSG(str) (void)puts(str); fflush(stdout);
@@ -79,10 +83,6 @@
 #define TypeConfigWords   0x03
 #define	TypeEndOfTypeList 0xFF
 
-/* Device family */
-#define DEVICE_FAMILY_PIC18 0x01
-#define DEVICE_FAMILY_PIC24 0x02
-#define DEVICE_FAMILY_PIC32 0x03
 
 
 /* Error codes returned by various functions */
@@ -117,7 +117,26 @@ extern ErrorCode
 	usbWrite(char,char);
 extern void
 	hexClose(void),
-	usbClose(void),
-	hexSetBytesPerAddress(unsigned char);
+	usbClose(void);
+
+#pragma pack( push )
+#pragma pack( 1 )
+
+typedef struct {
+  unsigned char Command;
+  unsigned char PacketDataFieldSize;
+  unsigned char BytesPerAddress;
+  struct {
+    unsigned char Type;
+    unsigned int Address;
+    unsigned int Length;
+    } mem[ 6 ];
+  unsigned char memBlocks;
+  unsigned char _fill [ 6 ];
+  } sQuery;
+
+extern sQuery devQuery;
+
+#pragma pack( pop )
 
 #endif /* _MPHIDFLASH_H_ */
