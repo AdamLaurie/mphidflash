@@ -321,7 +321,7 @@ ErrorCode hexWrite(const char verify)
 	      if(1 != sscanf(&hexFileData[offset+9],"%04x",&addrHi))
 	        return ERR_HEX_SYNTAX;
 	      addrHi <<= 16;
-	      addr32 = addrHi + addrLo;
+	      addr32 = addrHi;
 	      /* Assume this means a noncontiguous address jump; issue block
 	         and start anew.  The prior noncontiguous address code should
 	         already have this covered, but in the freak case of an
@@ -331,8 +331,8 @@ ErrorCode hexWrite(const char verify)
 	        if(ERR_NONE != (status = issueBlock(addrSave,bufLen,pass)))
 	          return status;
 	        bufLen   = 0;
-	        addrSave = addr32;
 	      }
+	      addrSave = addr32;
 
 
 	    } else if(5 == type) { /* Start address */
