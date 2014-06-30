@@ -1,5 +1,5 @@
 /****************************************************************************
- File        : usb-linux.c
+ File        : usb-windows.c
  Description : Encapsulates all nonportable, Linux-specific USB I/O code
                within the mphidflash program.  Each supported operating
                system has its own source file, providing a common calling

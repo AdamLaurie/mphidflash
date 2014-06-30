@@ -8,9 +8,13 @@
                  * Initial implementation
                2009-12-26  Thomas Fischl, Dominik Fisch (www.FundF.net)
                  * Renamed 'ubw32' to 'mphidflash'
+               2010-12-28  Petr Olivka
+                 * program and verify only data for defined memory areas
+                 * send only even length of data to PIC
                
  License     : Copyright (C) 2009 Phillip Burgess
                Copyright (C) 2009 Thomas Fischl, Dominik Fisch (www.FundF.net)
+               Copyright (C) 2010 Petr Olivka
 
                This file is part of 'mphidflash' program.
 
@@ -33,6 +37,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "mphidflash.h"
+
+sQuery devQuery;
 
 extern unsigned char * usbBuf;  /* In usb code */
 
@@ -137,9 +143,9 @@ int main(
 "-r         Reset device on program exit                     No reset\n"
 "-n         No verify after write                            Verify on\n"
 "-u         Unlock configuration memory before erase/write   Config locked\n"
-"-v <hex>   USB device vendor ID                             04d8\n"
-"-p <hex>   USB device product ID                            003c\n"
-"-h or -?   Help\n", VERSION_MAIN, VERSION_SUB);
+"-v <hex>   USB device vendor ID                             %04x\n"
+"-p <hex>   USB device product ID                            %04x\n"
+"-h or -?   Help\n", VERSION_MAIN, VERSION_SUB, vendorID, productID);
 			return 0;
 		} else {
 			status = ERR_CMD_UNKNOWN;
@@ -153,47 +159,33 @@ int main(
 
 		/* And start doing stuff... */
 
-		(void)printf("USB HID device found\n");
+		(void)printf("USB HID device found");
 		usbBuf[0] = QUERY_DEVICE;
 		if(ERR_NONE == (status = usbWrite(1,1))) {
-			int j;
-
-                        (void)printf("  Device family: ");
-			unsigned char deviceFamily = usbBuf[2];
-			switch (deviceFamily)
-			{
-				case DEVICE_FAMILY_PIC18:
-					hexSetBytesPerAddress(1);
-					(void)printf("PIC18\n");
-					break;
-				case DEVICE_FAMILY_PIC24:
-					hexSetBytesPerAddress(2);
-					(void)printf("PIC24\n");
-					break;
-				case DEVICE_FAMILY_PIC32:
-					hexSetBytesPerAddress(1);
-					(void)printf("PIC32\n");
-					break;
-				default:
-					hexSetBytesPerAddress(1);
-					(void)printf("Unknown. Bytes per address set to 1.\n");
-					break;
-			}
-
-                        (void)printf("  Program memory: ");
-			for(i=1,j=3;usbBuf[j]!=TypeEndOfTypeList;j+=9,i++) {
-			  if(usbBuf[j] == TypeProgramMemory)
-			    (void)printf("%d bytes free. ",bufRead32(j + 5));
-			}
-			(void)putchar('\n');
+			memcpy( &devQuery, usbBuf, 64 );
+			i = 0;
+			while ( devQuery.mem[ i ].Type != TypeEndOfTypeList ) i++;
+			devQuery.memBlocks = i;
+			for ( i = 0; i < devQuery.memBlocks; i++ )
+			  if(devQuery.mem[i].Type == TypeProgramMemory) {
+			    (void)printf(": %d bytes free",devQuery.mem[i].Length);
+			    break;
+			    }
 
 		}
+		(void)putchar('\n');
 
 		if((ERR_NONE == status) && (actions & ACTION_UNLOCK)) {
 			(void)puts("Unlocking configuration memory...");
 			usbBuf[0] = UNLOCK_CONFIG;
 			usbBuf[1] = UNLOCKCONFIG;
 			status    = usbWrite(2,0);
+		}
+		// disable all configuration blocks in devQuery if locked
+		if ( !( actions & ACTION_UNLOCK ) ) {
+			for ( i = 0; i < devQuery.memBlocks; i++ )
+			    if ( devQuery.mem[ i ].Type == TypeConfigWords )
+				devQuery.mem[ i ].Type = 0;
 		}
 
 		/* Although the next actual operation is ACTION_ERASE,
