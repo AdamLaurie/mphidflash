@@ -334,6 +334,11 @@ ErrorCode hexWrite(const char verify)
 	        addrSave = addr32;
 	      }
 
+
+	    } else if(5 == type) { /* Start address */
+
+	      /* Ignore */
+
 	    } else { /* Unsupported record type */
 	      return ERR_HEX_RECORD;
 	    }
