@@ -48,7 +48,19 @@ static char          *hexPlusOne;         /* Saves a lot of "+1" math    */
 static int            hexFd;              /* Open hex file descriptor    */
 static size_t         hexFileSize;        /* Save for use by munmap()    */
 static unsigned char  hexBuf[56];         /* Data read/written to USB    */
-extern unsigned char *usbBuf;           /* In usb code                 */
+extern unsigned char *usbBuf;             /* In usb code                 */
+unsigned char bytesPerAddress = 1;        /* Bytes in flash per address */ 		
+
+/**************************************************************************** 		
+Function : hexSetBytesPerAddress 		
+Description : Sets given byte width 		
+Parameters : unsigned char Bytes per address 		
+Returns : Nothing (void) 		
+****************************************************************************/ 		
+void hexSetBytesPerAddress(unsigned char bytes) 		
+{ 		
+bytesPerAddress = bytes; 		
+}
 
 /****************************************************************************
  Function    : hexOpen
@@ -181,7 +193,7 @@ static ErrorCode issueBlock(
  	return status;
  	}
 
-	bufWrite32(usbBuf,1,addr);
+	bufWrite32(usbBuf,1,addr / bytesPerAddress);
 	usbBuf[5] = len;
 
 	if(verify) {

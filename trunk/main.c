@@ -168,9 +168,31 @@ int main(
 			devQuery.memBlocks = i;
 			for ( i = 0; i < devQuery.memBlocks; i++ )
 			  if(devQuery.mem[i].Type == TypeProgramMemory) {
-			    (void)printf(": %d bytes free",devQuery.mem[i].Length);
+			    (void)printf(": %d bytes free\n",devQuery.mem[i].Length);
 			    break;
 			    }
+
+			(void)printf("Device family: ");
+ 			switch (devQuery.DeviceFamily)
+				{
+				case DEVICE_FAMILY_PIC18:
+					hexSetBytesPerAddress(1);
+					(void)printf("PIC18\n");
+					break;
+				case DEVICE_FAMILY_PIC24:
+					hexSetBytesPerAddress(2);
+					(void)printf("PIC24\n");
+					break;
+				case DEVICE_FAMILY_PIC32:
+					hexSetBytesPerAddress(1);
+					(void)printf("PIC32\n");
+					break;
+				default:
+					hexSetBytesPerAddress(1);
+					(void)printf("Unknown. Bytes per address set to 1.\n");
+					break;
+			}
+
 
 		}
 		(void)putchar('\n');
