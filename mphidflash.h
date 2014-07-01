@@ -83,7 +83,10 @@
 #define TypeConfigWords   0x03
 #define	TypeEndOfTypeList 0xFF
 
-
+/* Device family */ 		
+#define DEVICE_FAMILY_PIC18 0x01 		
+#define DEVICE_FAMILY_PIC24 0x02 		
+#define DEVICE_FAMILY_PIC32 0x03
 
 /* Error codes returned by various functions */
 
@@ -117,7 +120,8 @@ extern ErrorCode
 	usbWrite(char,char);
 extern void
 	hexClose(void),
-	usbClose(void);
+	usbClose(void),
+	hexSetBytesPerAddress(unsigned char);
 
 #pragma pack( push )
 #pragma pack( 1 )
@@ -125,7 +129,7 @@ extern void
 typedef struct {
   unsigned char Command;
   unsigned char PacketDataFieldSize;
-  unsigned char BytesPerAddress;
+  unsigned char DeviceFamily;
   struct {
     unsigned char Type;
     unsigned int Address;
