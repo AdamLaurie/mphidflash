@@ -113,18 +113,37 @@ ErrorCode hexOpen(char * const filename)
 
 static int verifyBlock( unsigned int *addr, char *len )
 {
-	int i, isA, isL, MA, ML, ret = 0;
+	int i, isA, isL, MA, ML;
 	for ( i = 0; i < devQuery.memBlocks; i++ )
 	{
-		if ( !devQuery.mem[ i ].Type ) continue;
+		/* only look at programmable memory blocks */
+		if ( !devQuery.mem[ i ].Type )
+			continue;
+
+		/* calc if first or last address is in this block */
 		MA = devQuery.mem[ i ].Address;
 		ML = devQuery.mem[ i ].Length;
 		isA = ( *addr >= MA ) && ( *addr < MA + ML );
 		isL = ( *addr + *len > MA ) && ( *addr + *len <= MA + ML );
-		if ( !isA && !isL ) continue;
-		if ( isA && isL ) return 0;
-		if ( isA ) *len = ( MA + ML ) - *addr;
-		if ( isL ) { *len = ( *addr + *len ) - MA; *addr = MA; }
+
+		/* loop if neither */
+		if ( !isA && !isL )
+			continue;
+
+		/* both addresses is fine */
+		if ( isA && isL )
+			return 0;
+
+		/* if only start address we adjust length to end of block */
+		if ( isA )
+			*len = ( MA + ML ) - *addr;
+
+		/* if only last address we adjust start to start of block */
+		if ( isL ) {
+			*len = ( *addr + *len ) - MA;
+			*addr = MA;
+		}
+
 		return 0;
 	}
 	return 1;
