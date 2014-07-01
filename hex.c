@@ -173,6 +173,14 @@ static ErrorCode issueBlock(
 		hexBuf[ len++ ] = 0xff;
 	}
 
+ 	/* Short data packets need flushing */
+ 	if (len == 0) {
+ 	DEBUGMSG("Completing");
+ 	usbBuf[0] = PROGRAM_COMPLETE;
+ 	status = usbWrite(1,0);
+ 	return status;
+ 	}
+
 	bufWrite32(usbBuf,1,addr);
 	usbBuf[5] = len;
 
