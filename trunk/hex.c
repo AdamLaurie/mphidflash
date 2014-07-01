@@ -111,7 +111,8 @@ ErrorCode hexOpen(char * const filename)
 	return status;
 }
 
-static int verifyBlock( unsigned int *addr, char *len )
+/* check memory address & length are in a programmable memory area, as reported by device's Bootloader */
+static int verifyBlockProgrammable( unsigned int *addr, char *len )
 {
 	int i, isA, isL, MA, ML;
 	for ( i = 0; i < devQuery.memBlocks; i++ )
@@ -189,8 +190,8 @@ static ErrorCode issueBlock(
 	(void)putchar('.'); fflush(stdout);
 #endif
 
-	// check device memory blocks
-	if ( verifyBlock( &addr, &len ) ) { 
+	// check device memory blocks are programmable
+	if ( verifyBlockProgrammable( &addr, &len ) ) { 
 #ifdef DEBUG	
 		printf( "Skip data on address %04x with length %d\n", addr, len ); 
 #endif
