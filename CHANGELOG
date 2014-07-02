@@ -1,3 +1,18 @@
+2014-07-02
+	* Issue #12 - improve readability of address checking routine [tonynaggs]
+	* Re-implement setting of bytes per address according to device family, 
+	  clobbered (and broken) by 1.4 patch [Adam Laurie]
+	* Replace short buffer flushing code clobbered by v1.4 patch [Adam Laurie]
+	* Change misleading function name (verifyBlock -> verifyBlockProgrammable) [Adam Laurie]
+	* Add 32-bit target to Makefile [Adam Laurie]
+	* Release candidate 1.5
+
+2014-07-01
+	* issue #3 - improve USB debugging levels [rperrin]
+	* issue #4 - fix verify error, using suggested 1.4 patch [Petr Olivka]
+	* issue #7 - ignore hex file type 5 lines (start address) [serge@vak.ru]
+	* issue #8 - fix address tracking in type 4 records [foofoobedoo]
+
 2010-05-15  Thomas Fischl (www.fundf.net)
 	* Send PROGRAM_COMPLETE before any non-contiguous address. Patch by Erik Gustavsson.
 	* Added support for PIC24. Based on patch by Erik Gustavsson.
