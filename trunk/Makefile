@@ -22,7 +22,11 @@ all: $(EXECS)
 
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
- 
+
+mphidflash32: CFLAGS += -m32 
+mphidflash32: LDFLAGS += -m32
+mphidflash32: mphidflash
+
 mphidflash: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS) -o mphidflash
 	strip mphidflash
