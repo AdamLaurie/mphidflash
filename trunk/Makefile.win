@@ -27,7 +27,7 @@ clean:
 	rm -f $(EXECS) *.o core
 
 srcdist:
-	make dist
+	make srcdist
 
 bindist:
 	make bindist
