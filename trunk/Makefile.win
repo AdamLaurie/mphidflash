@@ -26,12 +26,21 @@ mphidflash.exe: $(OBJS)
 clean:
 	rm -f $(EXECS) *.o core
 
+srcdist:
+	make dist
+
 bindist:
 	make bindist
 
 tarball:
 	make tarball
 
+src-tarball:
+	make src-tarball
+
 zipfile:
 	make zipfile
+
+src-zipfile:
+	make src-zipfile
 

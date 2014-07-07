@@ -61,12 +61,22 @@ install64: mphidflash64
 clean:
 	rm -f *.o core
 
+
 bindist: tarball zipfile
+
+srcdist: src-tarball src-zipfile
 
 tarball:
 	tar cvzf $(DISTPATH)/mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-bin.tar.gz README.txt CHANGELOG COPYING $(EXECPATH)/*$(VERSION_MAIN).$(VERSION_SUB)*
 
+src-tarball:
+	tar cvzf $(DISTPATH)/mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-src.tar.gz README.txt CHANGELOG COPYING Makefile* *.c *.h
+
 zipfile:
 	rm -f $(DISTPATH)/mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-bin.zip
 	zip $(DISTPATH)/mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-bin.zip README.txt CHANGELOG COPYING $(EXECPATH)/*$(VERSION_MAIN).$(VERSION_SUB)*
+
+src-zipfile:
+	rm -f $(DISTPATH)/mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-src.zip
+	zip $(DISTPATH)/mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-src.zip README.txt CHANGELOG COPYING Makefile* *.c *.h
 
