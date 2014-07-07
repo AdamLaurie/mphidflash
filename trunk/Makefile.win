@@ -1,7 +1,10 @@
+VERSION_MAIN = 1
+VERSION_SUB  = 6
+
 CC    = i586-mingw32msvc-gcc
 EXECS = mphidflash.exe
 OBJS  = main.o hex.o usb-windows.o
-CFLAGS = -DWIN
+CFLAGS = -DWIN -DVERSION_MAIN=$(VERSION_MAIN) -DVERSION_SUB=$(VERSION_SUB)
 LDFLAGS = -lhid -lsetupapi 
 
 all: $(EXECS)
@@ -10,13 +13,25 @@ all: $(EXECS)
 
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
- 
+
+# todo: add 64 bit target (low priority as 32 bit works on all platforms)
+
+mphidflash32: CFLAGS += -m32 
+mphidflash32: LDFLAGS += -m32
+mphidflash32: mphidflash.exe
+
 mphidflash.exe: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS) -o mphidflash.exe
+	$(CC) $(OBJS) $(LDFLAGS) -o binaries/mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-win-32.exe
 
 clean:
 	rm -f $(EXECS) *.o core
 
-bindist: $(EXECS)
-	zip mphidflash-bin-win.zip README.txt CHANGELOG COPYING $(EXECS)
+bindist:
+	make bindist
+
+tarball:
+	make tarball
+
+zipfile:
+	make zipfile
 

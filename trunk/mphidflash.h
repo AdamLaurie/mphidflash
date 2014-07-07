@@ -37,9 +37,6 @@
 #ifndef _MPHIDFLASH_H_
 #define _MPHIDFLASH_H_
 
-#define VERSION_MAIN 1
-#define VERSION_SUB 5
-
 #ifdef DEBUG
 #define DEBUGMSG(str) (void)puts(str); fflush(stdout);
 #else

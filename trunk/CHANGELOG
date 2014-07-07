@@ -1,3 +1,10 @@
+2014-07-07  Adam Laurie
+	* Release 1.6
+	* Move versioning into Makefile
+	* Move executables into binaries sub-dir
+	* Add pre-compiled linux-32/64, osx-32/64 and win-32 executables to repo
+	* Create dist sub-dir for tarball and zipfile (as google code no longer supports downloads)
+
 2014-07-02
 	* Issue #12 - improve readability of address checking routine [tonynaggs]
 	* Re-implement setting of bytes per address according to device family, 
