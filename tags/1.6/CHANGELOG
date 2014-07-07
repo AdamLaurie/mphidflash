@@ -1,0 +1,42 @@
+2014-07-07  Adam Laurie
+	* Release 1.6
+	* Move versioning into Makefile
+	* Move executables into binaries sub-dir
+	* Add pre-compiled linux-32/64, osx-32/64 and win-32 executables to repo
+	* Create dist sub-dir for tarball and zipfile (as google code no longer supports downloads)
+
+2014-07-02
+	* Issue #12 - improve readability of address checking routine [tonynaggs]
+	* Re-implement setting of bytes per address according to device family, 
+	  clobbered (and broken) by 1.4 patch [Adam Laurie]
+	* Replace short buffer flushing code clobbered by v1.4 patch [Adam Laurie]
+	* Change misleading function name (verifyBlock -> verifyBlockProgrammable) [Adam Laurie]
+	* Add 32-bit target to Makefile [Adam Laurie]
+	* Release candidate 1.5
+
+2014-07-01
+	* issue #3 - improve USB debugging levels [rperrin]
+	* issue #4 - fix verify error, using suggested 1.4 patch [Petr Olivka]
+	* issue #7 - ignore hex file type 5 lines (start address) [serge@vak.ru]
+	* issue #8 - fix address tracking in type 4 records [foofoobedoo]
+
+2010-05-15  Thomas Fischl (www.fundf.net)
+	* Send PROGRAM_COMPLETE before any non-contiguous address. Patch by Erik Gustavsson.
+	* Added support for PIC24. Based on patch by Erik Gustavsson.
+	* Added support for PIC32. Based on patch by Hannes Brockmann (www.pironex.de).
+
+2009-12-28  Thomas Fischl, Dominik Fisch (www.fundf.net)
+	* Added support for libusb without dependencies to libhid 
+
+2009-12-26  1.3  Thomas Fischl, Dominik Fisch (www.fundf.net)
+	* Renamed tool. New name is 'mphidflash'.
+	* Added windows support (usb-windows.c)
+
+2009-04-16  1.2  Phillip Burgess
+	* Bug fix for non-Intel and 64-bit platforms.
+ 
+2009-03-16  1.1  Phillip Burgess
+	* Added linux support (usb-linux.c)
+
+2009-02-19  1.0  Phillip Burgess 
+	* Initial implementation of 'ubw32' 
