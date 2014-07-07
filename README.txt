@@ -17,16 +17,24 @@ from the command line:
 	sudo apt-get install libhid-dev
 
 Assuming you're reading this as the README.txt alongside the source code,
-to compile mphidflash, in the Terminal window type:
+to compile mphidflash for a 32 or 64 bit system, in the Terminal window type:
 
-	make
+	make mphidflash32
+
+  or
+
+	make mphidflash64
 
 Then install with the command:
 
-	sudo make install
+	sudo make install32
 
-This will copy the 'mphidflash' executable to /usr/local/bin so you don't need
-to specify a complete path to the program each time.
+  or
+
+	sudo make install64
+
+This will copy the appropriate executable to /usr/local/bin/mphidflash so you 
+don't need to specify a complete path to the program each time.
 
 
 Mac OS X
@@ -36,16 +44,24 @@ developer tools) already installed.  The IDE portion is not used here, just
 the command line interface.
 
 Assuming you're reading this as the README.txt alongside the source code,
-to compile mphidflash, in the Terminal window type:
+to compile mphidflash for a 32 or 64 bit system, in the Terminal window type:
 
-	make
+	make mphidflash32
+
+  or
+
+	make mphidflash64
 
 Then install with the command:
 
-	sudo make install
+	sudo make install32
 
-This will copy the 'mphidflash' executable to /usr/local/bin so you don't need
-to specify a complete path to the program each time.
+  or
+
+	sudo make install64
+
+This will copy the appropriate executable to /usr/local/bin/mphidflash so you
+don't need to specify a complete path to the program each time.
 
 
 Windows
@@ -62,8 +78,9 @@ to compile mphidflash, in the Terminal window type:
 
 	make -f Makefile.win
 
-This will create 'mphidflash.exe' which can called from the Windows commmand
-line.
+This will create a .exe in the binaries sub-directory, which can be called
+from the Windows commmand line - e.g. 'mphidflash-1.6-win-32.exe'. You should 
+copy this file somewhere on your executable path and rename it to 'mphidflash.exe'.
 
 
 Usage

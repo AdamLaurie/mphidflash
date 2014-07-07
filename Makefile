@@ -1,6 +1,10 @@
-CC    = gcc
-EXECS = mphidflash
-OBJS  = main.o hex.o
+VERSION_MAIN = 1
+VERSION_SUB  = 6
+
+CC       = gcc
+OBJS     = main.o hex.o
+EXECPATH = binaries
+DISTPATH = dist
 
 ifeq ($(shell uname -s),Darwin)
 # Rules for Mac OS X
@@ -16,28 +20,53 @@ else
   SYSTEM = linux
 endif
 
-all: $(EXECS)
+CFLAGS += -DVERSION_MAIN=$(VERSION_MAIN) -DVERSION_SUB=$(VERSION_SUB)
+
+all: 
+	@echo
+	@echo Please make 'mphidflash32' or 'mphidflash64' for 32 or 64 bit version
+	@echo
 
 *.o: mphidflash.h
 
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
 
+mphidflash64: CFLAGS += -m64
+mphidflash64: LDFLAGS += -m64
+mphidflash64: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-$(SYSTEM)-64
+mphidflash64: mphidflash
+
 mphidflash32: CFLAGS += -m32 
 mphidflash32: LDFLAGS += -m32
+mphidflash32: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-$(SYSTEM)-32
 mphidflash32: mphidflash
 
 mphidflash: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS) -o mphidflash
-	strip mphidflash
+	$(CC) $(OBJS) $(LDFLAGS) -o $(EXECPATH)/$(EXEC)
+	strip $(EXECPATH)/$(EXEC)
+
+install:
+	@echo
+	@echo Please make 'install32 or install64' to install 32 or 64 bit target
+	@echo
 
 # Must install as root; e.g. 'sudo make install'
-install: mphidflash
-	cp mphidflash /usr/local/bin
+install32: mphidflash32
+	cp $(EXECPATH)/mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-$(SYSTEM)-32 /usr/local/bin/mphidflash
+
+install64: mphidflash64
+	cp $(EXECPATH)/mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-$(SYSTEM)-64 /usr/local/bin/mphidflash
 
 clean:
-	rm -f $(EXECS) *.o core
+	rm -f *.o core
 
-bindist: $(EXECS)
-	tar cvzf mphidflash-bin-$(SYSTEM).tar.gz README.txt CHANGELOG COPYING $(EXECS)
+bindist: tarball zipfile
+
+tarball:
+	tar cvzf $(DISTPATH)/mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-bin.tar.gz README.txt CHANGELOG COPYING $(EXECPATH)/*$(VERSION_MAIN).$(VERSION_SUB)*
+
+zipfile:
+	rm -f $(DISTPATH)/mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-bin.zip
+	zip $(DISTPATH)/mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-bin.zip README.txt CHANGELOG COPYING $(EXECPATH)/*$(VERSION_MAIN).$(VERSION_SUB)*
 
