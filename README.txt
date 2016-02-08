@@ -2,8 +2,8 @@
 USB HID-Bootloader and downloading new firmware. mphidflash supports Linux, 
 Mac OS X (Leopard and later), and Windows.
 
-The 'mphidflash' project is hosted on
-http://code.google.com/p/mphidflash/
+The 'mphidflash' project is hosted at https://github.com/ApertureLabsLtd/mphidflash
+(migrated from http://code.google.com/p/mphidflash/)
 
 Building and Installing
 =======================
