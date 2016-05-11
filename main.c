@@ -241,6 +241,11 @@ int main(
 			  (void)putchar('\n');
 			}
 			hexClose();
+			if(ERR_NONE == status) {
+				(void)puts("Signing flash...");
+				usbBuf[0] = SIGN_FLASH;
+				status = usbWrite(1,0);
+			}
 		}
 
 		if((ERR_NONE == status) && (actions & ACTION_RESET)) {
