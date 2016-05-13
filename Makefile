@@ -44,7 +44,7 @@ mphidflash32: mphidflash
 
 mphidflash: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS) -o $(EXECPATH)/$(EXEC)
-	strip $(EXECPATH)/$(EXEC)
+	$(STRIP) $(EXECPATH)/$(EXEC)
 
 install:
 	@echo
