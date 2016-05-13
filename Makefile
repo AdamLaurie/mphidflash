@@ -5,6 +5,7 @@ CC       = gcc
 OBJS     = main.o hex.o
 EXECPATH = binaries
 DISTPATH = dist
+STRIP   := strip
 
 ifeq ($(shell uname -s),Darwin)
 # Rules for Mac OS X
