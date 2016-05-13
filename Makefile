@@ -5,6 +5,7 @@ CC       = gcc
 OBJS     = main.o hex.o
 EXECPATH = binaries
 DISTPATH = dist
+STRIP   := strip
 
 ifeq ($(shell uname -s),Darwin)
 # Rules for Mac OS X
@@ -44,7 +45,7 @@ mphidflash32: mphidflash
 
 mphidflash: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS) -o $(EXECPATH)/$(EXEC)
-	strip $(EXECPATH)/$(EXEC)
+	$(STRIP) $(EXECPATH)/$(EXEC)
 
 install:
 	@echo
