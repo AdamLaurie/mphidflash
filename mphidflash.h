@@ -59,6 +59,13 @@
                                 (usbBuf[pos + 3] << 24) )
 #endif /* i386 || __x86_64__ */
 
+/* Helper function to convert to correct endianess */
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define convertEndian(x) __builtin_bswap32(x)
+#else
+#define convertEndian(x) x
+#endif  // Big endian
+
 /* Values derived from Microchip HID Bootloader source */
 
 /* Bootloader commands */
