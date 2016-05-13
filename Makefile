@@ -1,5 +1,5 @@
 VERSION_MAIN = 1
-VERSION_SUB  = 6
+VERSION_SUB  = 7
 
 CC       = gcc
 OBJS     = main.o hex.o
