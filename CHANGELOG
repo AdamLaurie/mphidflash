@@ -1,3 +1,9 @@
+2016-05-13 [Micke Prag - pull request #17]
+	* Release 1.7
+	* Add signing option for newer bootloaders:
+		After the flash has been verified we need to send the SIGN_FLASH command
+		to the bootloader. Else the bootloader won't boot into the new firmware.
+
 2014-07-07  Adam Laurie
 	* Release 1.6
 	* Move versioning into Makefile
