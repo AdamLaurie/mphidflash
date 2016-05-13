@@ -94,6 +94,7 @@ options:
 -reset			Reset PIC
 -noverify		Skip verification step
 -erase			Erase PIC memory
+-sign			Sign flash
 -vendor <hex>	Use given USB vendor id instead of default id
 -product <hex>	Use given USB product id instead of default id
 

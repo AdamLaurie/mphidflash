@@ -69,6 +69,7 @@
 #define	PROGRAM_COMPLETE  0x06
 #define GET_DATA          0x07
 #define	RESET_DEVICE      0x08
+#define SIGN_FLASH        0x09
 
 /* Sub-commands for the ERASE_DEVICE command */
 #define UNLOCKCONFIG      0x00

@@ -51,6 +51,7 @@ extern unsigned char * usbBuf;  /* In usb code */
 #define ACTION_ERASE  (1 << 1)
 #define ACTION_VERIFY (1 << 2)
 #define ACTION_RESET  (1 << 3)
+#define ACTION_SIGN   (1 << 4)
 
 /****************************************************************************
  Function    : main
@@ -107,6 +108,7 @@ int main(
 	   -e               Erase program memory
 	   -n               No verify after write
 	   -w <file>        Write program memory
+	   -s               Sign code
 	   -r               Reset */
 
 	for(i=1;(i < argc) && (ERR_NONE == status);i++) {
@@ -130,6 +132,8 @@ int main(
 				hexFile  = argv[++i];
 				actions |= ACTION_ERASE;
 			}
+		} else if(!strncasecmp(argv[i],"-s",2)) {
+			actions |= ACTION_SIGN;
 		} else if(!strncasecmp(argv[i],"-r",2)) {
 			actions |= ACTION_RESET;
 		} else if(!strncasecmp(argv[i],"-h",2) ||
@@ -143,6 +147,8 @@ int main(
 "-r         Reset device on program exit                     No reset\n"
 "-n         No verify after write                            Verify on\n"
 "-u         Unlock configuration memory before erase/write   Config locked\n"
+"-s         Sign flash. This option is required by later     No signing\n"
+"           versions of the bootloader.\n"
 "-v <hex>   USB device vendor ID                             %04x\n"
 "-p <hex>   USB device product ID                            %04x\n"
 "-h or -?   Help\n", VERSION_MAIN, VERSION_SUB, vendorID, productID);
@@ -241,6 +247,12 @@ int main(
 			  (void)putchar('\n');
 			}
 			hexClose();
+		}
+
+		if((ERR_NONE == status) && (actions & ACTION_SIGN)) {
+			(void)puts("Signing flash...");
+			usbBuf[0] = SIGN_FLASH;
+			status = usbWrite(1,0);
 		}
 
 		if((ERR_NONE == status) && (actions & ACTION_RESET)) {
