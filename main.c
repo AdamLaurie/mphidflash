@@ -172,11 +172,13 @@ int main(
 			i = 0;
 			while ( devQuery.mem[ i ].Type != TypeEndOfTypeList ) i++;
 			devQuery.memBlocks = i;
-			for ( i = 0; i < devQuery.memBlocks; i++ )
+			for ( i = 0; i < devQuery.memBlocks; i++ ) {
+			  devQuery.mem[i].Address = convertEndian(devQuery.mem[i].Address);
+			  devQuery.mem[i].Length = convertEndian(devQuery.mem[i].Length);
 			  if(devQuery.mem[i].Type == TypeProgramMemory) {
 			    (void)printf(": %d bytes free\n",devQuery.mem[i].Length);
-			    break;
 			    }
+			}
 
 			(void)printf("Device family: ");
  			switch (devQuery.DeviceFamily)
