@@ -279,13 +279,14 @@ static ErrorCode issueBlock(
  ****************************************************************************/
 ErrorCode hexWrite(const char verify)
 {
-	char         *ptr,pass;
+	char         *ptr,pass,fullBlock;
 	ErrorCode     status;
 	int           checksum,i,end,offset;
 	short         bufLen;
 	unsigned int  len,type,addrHi,addrLo,addr32,addrSave;
 
 	for(pass=0;pass<=verify;pass++) {
+	  fullBlock = 0;
 	  offset   = 0; /* Start at beginning of hex file         */
 	  bufLen   = 0; /* Hex buffer initially empty             */
 	  addrHi   = 0; /* Initial address high bits              */
@@ -327,6 +328,9 @@ ErrorCode hexWrite(const char verify)
 	          if(ERR_NONE != (status = issueBlock(addrSave,bufLen,pass)))
 	            return status;
 	          bufLen = 0;
+	        } else {
+	          if(ERR_NONE != (status = issueBlock(addrSave,0,pass)))
+	            return status;
 	        }
 	        addrSave = addr32;
 	      }
@@ -338,6 +342,7 @@ ErrorCode hexWrite(const char verify)
 	        if(sizeof(hexBuf) == bufLen) {
 	          if(ERR_NONE != (status = issueBlock(addrSave,bufLen,pass)))
 	            return status;
+	          fullBlock = (bufLen == 54);
 	          bufLen = 0;
 	        }
 
