@@ -1,3 +1,11 @@
+2016-05-13 [Micke Prag - pull request #19, #20]
+	* Release 1.8
+	* Strip binaries using the strip tool set by the current toolchain and not
+	  the hardcoded system one. This fix is needed for crosscompilation.
+	* The usb data is returned as little endian. When using on big endian
+	  systems (such as mips) this must be converted.
+	* [Adam Laurie & Micke Prag] Ensure data is always flushed after write.
+
 2016-05-13 [Micke Prag - pull request #17]
 	* Release 1.7
 	* Add signing option for newer bootloaders:

@@ -1,5 +1,5 @@
 VERSION_MAIN = 1
-VERSION_SUB  = 7
+VERSION_SUB  = 8
 
 CC       = gcc
 OBJS     = main.o hex.o
@@ -22,6 +22,7 @@ else
 endif
 
 CFLAGS += -DVERSION_MAIN=$(VERSION_MAIN) -DVERSION_SUB=$(VERSION_SUB)
+#CFLAGS += -DDEBUG
 
 all: 
 	@echo

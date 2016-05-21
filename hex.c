@@ -50,6 +50,7 @@ static size_t         hexFileSize;        /* Save for use by munmap()    */
 static unsigned char  hexBuf[56];         /* Data read/written to USB    */
 extern unsigned char *usbBuf;             /* In usb code                 */
 unsigned char bytesPerAddress = 1;        /* Bytes in flash per address */ 		
+static char Flushed= 1;                   /* Do we need to flush buffer? */
 
 /**************************************************************************** 		
 Function : hexSetBytesPerAddress 		
@@ -206,10 +207,11 @@ static ErrorCode issueBlock(
 	}
 
  	/* Short data packets need flushing */
- 	if (len == 0) {
+	if (!verify && len == 0 && !Flushed) {
  	DEBUGMSG("Completing");
  	usbBuf[0] = PROGRAM_COMPLETE;
  	status = usbWrite(1,0);
+	Flushed= 1;
  	return status;
  	}
 
@@ -254,6 +256,8 @@ static ErrorCode issueBlock(
 			usbBuf[0] = PROGRAM_COMPLETE;
 			status    = usbWrite(1,0);
 		}
+		// flag if external code may need to flush before next write
+		Flushed= (len < 56);
 	}
 
 #ifdef DEBUG
@@ -315,6 +319,9 @@ ErrorCode hexWrite(const char verify)
 	      /* If new record address is not contiguous with prior record,
 	         issue accumulated hex data (if any) and start anew. */
 	      if((addrHi + addrLo) != addr32) {
+		// flush previous write
+		if(!Flushed && ERR_NONE != (status = issueBlock(addrSave,0,pass)))
+	          return status;
 	        addr32 = addrHi + addrLo;
 	        if(bufLen) {
 	          if(ERR_NONE != (status = issueBlock(addrSave,bufLen,pass)))
@@ -367,6 +374,9 @@ ErrorCode hexWrite(const char verify)
 	         already have this covered, but in the freak case of an
 	         extended address record with no subsequent data, make sure
 	         the last of the data is issued. */
+	      // flush previous write
+	      if(!Flushed && ERR_NONE != (status = issueBlock(addrSave,0,pass)))
+	        return status;
 	      if(bufLen) {
 	        if(ERR_NONE != (status = issueBlock(addrSave,bufLen,pass)))
 	          return status;
@@ -394,14 +404,10 @@ ErrorCode hexWrite(const char verify)
 	    (ERR_NONE != (status = issueBlock(addrSave,bufLen,pass))))
 	      return status;
 
-	  /* Make sure last data is flushed (issueBlock() does this
-	     automatically if less than 56 bytes...but if the last packet
-	     is exactly this size, an explicit flush is done here). */
-	  if(!pass && (bufLen == 56)) {
-	    DEBUGMSG("Completing");
-	    usbBuf[0] = PROGRAM_COMPLETE;
-	    if(ERR_NONE != (status = usbWrite(1,0))) return status;
-	  }
+	  /* Make sure last data is flushed */
+	  if(!pass && !Flushed)
+	    return issueBlock(addrSave,0,pass);
+
 #ifdef DEBUG
 	  (void)printf("PASS %d of %d COMPLETE\n",pass,verify);
 #endif
