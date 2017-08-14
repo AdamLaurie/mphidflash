@@ -73,9 +73,9 @@
 #define	UNLOCK_CONFIG     0x03
 #define ERASE_DEVICE      0x04
 #define PROGRAM_DEVICE    0x05
-#define	PROGRAM_COMPLETE  0x06
+#define PROGRAM_COMPLETE  0x06
 #define GET_DATA          0x07
-#define	RESET_DEVICE      0x08
+#define RESET_DEVICE      0x08
 #define SIGN_FLASH        0x09
 
 /* Sub-commands for the ERASE_DEVICE command */
@@ -83,14 +83,14 @@
 #define LOCKCONFIG        0x01
 
 /* Response types for QUERY_DEVICE command */
-#define	TypeProgramMemory 0x01
+#define TypeProgramMemory 0x01
 #define TypeEEPROM        0x02
 #define TypeConfigWords   0x03
-#define	TypeEndOfTypeList 0xFF
+#define TypeEndOfTypeList 0xFF
 
-/* Device family */ 		
-#define DEVICE_FAMILY_PIC18 0x01 		
-#define DEVICE_FAMILY_PIC24 0x02 		
+/* Device family */
+#define DEVICE_FAMILY_PIC18 0x01
+#define DEVICE_FAMILY_PIC24 0x02
 #define DEVICE_FAMILY_PIC32 0x03
 
 /* Error codes returned by various functions */
@@ -119,10 +119,10 @@ typedef enum
 /* Function prototypes */
 
 extern ErrorCode
-	hexOpen(char *),
-	hexWrite(char),
-	usbOpen(unsigned short,unsigned short),
-	usbWrite(char,char);
+	hexOpen(char * const),
+	hexWrite(const char),
+	usbOpen(const unsigned short,const unsigned short),
+	usbWrite(const char,const char);
 extern void
 	hexClose(void),
 	usbClose(void),
