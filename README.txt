@@ -3,9 +3,9 @@ USB HID-Bootloader and downloading new firmware. mphidflash supports Linux,
 Mac OS X (Leopard and later), and Windows.
 
 Supports Microchip USB HID Bootloader for PIC16, PIC18, PIC24 distributed in
-the Microchip USB Library for Application, and ports to the PIC32 such as for
-the UBW32 (Ultimate Bit Whacker 32). The default USB Vendor Identity (VID) is
-0x04D8 and Product Identity (PID) 0x003C.
+the Microchip USB Library for Application, and Bootloader ports to the PIC32
+such as for the UBW32 (Ultimate Bit Whacker 32). The default USB Vendor Identity
+(VID) is 0x04D8 and Product Identity (PID) 0x003C.
 
 Note that 'mphidflash' does NOT support the Microchip PIC32 HID Bootloader
 distributed in the Microchip MPLAB Harmony, and previously in source code
@@ -117,3 +117,10 @@ the following command line can be used:
 
 	mphidflash -write test.hex -reset
 
+Tips
+====
+For programming or erase connect the development board directly to the PC or a
+powered hub, and consider using a short USB cable. The development board can
+rapidly change the amount of current drawn, and long cables can cause dips or
+spikes in the 5V connection. So these operations are more likely to fail if
+there are unpowered hubs or extensions connecting the board to the PC.
