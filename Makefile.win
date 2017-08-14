@@ -1,5 +1,5 @@
 VERSION_MAIN = 1
-VERSION_SUB  = 6
+VERSION_SUB  = 8
 
 CC    = i586-mingw32msvc-gcc
 EXECS = mphidflash.exe
