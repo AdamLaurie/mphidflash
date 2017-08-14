@@ -137,7 +137,7 @@ int main(
 		} else if(!strncasecmp(argv[i],"-r",2)) {
 			actions |= ACTION_RESET;
 		} else if(!strncasecmp(argv[i],"-h",2) ||
-		          !strncasecmp(argv[i],"-?",2)) {
+					!strncmp(argv[i],"-?",2)) {
 			(void)printf(
 "mphidflash v%d.%d: a Microchip HID Bootloader utility\n"
 "Option     Description                                      Default\n"
@@ -161,7 +161,7 @@ int main(
 	/* After successful command-line parsage, find/open USB device. */
 
 	if((ERR_NONE == status) &&
-	   (ERR_NONE == (status = usbOpen(vendorID,productID)))) {
+			(ERR_NONE == (status = usbOpen(vendorID,productID)))) {
 
 		/* And start doing stuff... */
 
@@ -173,11 +173,11 @@ int main(
 			while ( devQuery.mem[ i ].Type != TypeEndOfTypeList ) i++;
 			devQuery.memBlocks = i;
 			for ( i = 0; i < devQuery.memBlocks; i++ ) {
-			  devQuery.mem[i].Address = convertEndian(devQuery.mem[i].Address);
-			  devQuery.mem[i].Length = convertEndian(devQuery.mem[i].Length);
-			  if(devQuery.mem[i].Type == TypeProgramMemory) {
-			    (void)printf(": %d bytes free\n",devQuery.mem[i].Length);
-			    }
+				devQuery.mem[i].Address = convertEndian(devQuery.mem[i].Address);
+				devQuery.mem[i].Length = convertEndian(devQuery.mem[i].Length);
+				if(devQuery.mem[i].Type == TypeProgramMemory) {
+					(void)printf(": %d bytes free\n",devQuery.mem[i].Length);
+				}
 			}
 
 			(void)printf("Device family: ");
@@ -214,17 +214,17 @@ int main(
 		// disable all configuration blocks in devQuery if locked
 		if ( !( actions & ACTION_UNLOCK ) ) {
 			for ( i = 0; i < devQuery.memBlocks; i++ )
-			    if ( devQuery.mem[ i ].Type == TypeConfigWords )
-				devQuery.mem[ i ].Type = 0;
+				if ( devQuery.mem[ i ].Type == TypeConfigWords )
+					devQuery.mem[ i ].Type = 0;
 		}
 
 		/* Although the next actual operation is ACTION_ERASE,
 		   if we anticipate hex-writing in a subsequent step,
-                   attempt opening file now so we can display any error
+		   attempt opening file now so we can display any error
 		   message quickly rather than waiting through the whole
 		   erase operation (it's usually a simple filename typo). */
 		if((ERR_NONE == status) && hexFile &&
-		   (ERR_NONE != (status = hexOpen(hexFile))))
+				(ERR_NONE != (status = hexOpen(hexFile))))
 			hexFile = NULL;  /* Open or mmap error */
 
 		if((ERR_NONE == status) && (actions & ACTION_ERASE)) {
@@ -244,9 +244,9 @@ int main(
 
 		if(hexFile) {
 			if(ERR_NONE == status) {
-			  (void)printf("Writing hex file '%s':",hexFile);
-			  status = hexWrite((actions & ACTION_VERIFY) != 0);
-			  (void)putchar('\n');
+				(void)printf("Writing hex file '%s':",hexFile);
+				status = hexWrite((actions & ACTION_VERIFY) != 0);
+				(void)putchar('\n');
 			}
 			hexClose();
 		}

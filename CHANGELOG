@@ -1,3 +1,8 @@
+2017-08-15 Tony Naggs
+	* (minor) Stanardise code indentation with tabs (for main.c, hex.c &
+	  usb-windows.c, other files not touched), as there was a horrible mixture
+	  of tabs, 2 spaces & 4 spaces in some functions.
+
 2016-05-13 [Micke Prag - pull request #19, #20]
 	* Release 1.8
 	* Strip binaries using the strip tool set by the current toolchain and not

@@ -7,7 +7,7 @@
 
  History     : 2009-12-26  Thomas Fischl, Dominik Fisch (www.FundF.net)
                  * Initial windows support
-               
+
  License     : Copyright (C) 2009 Thomas Fischl, Dominik Fisch (www.FundF.net)
 
                This file is part of 'mphidflash' program.
@@ -39,21 +39,21 @@ HANDLE usbdevhandle = INVALID_HANDLE_VALUE;
 unsigned char        usbBufX[65];
 unsigned char *      usbBuf = &usbBufX[1];
 
-HIDP_CAPS       Capabilities;   
-PHIDP_PREPARSED_DATA        HidParsedData;   
+HIDP_CAPS       Capabilities;
+PHIDP_PREPARSED_DATA        HidParsedData;
 
 ErrorCode usbOpen(
   const unsigned short vendorID,
   const unsigned short productID)
 {
-	ErrorCode      status = ERR_DEVICE_NOT_FOUND;
+	ErrorCode   status = ERR_DEVICE_NOT_FOUND;
 	int i;
 	GUID                                hidGuid;
-	HDEVINFO deviceInfoList;	
-	SP_DEVICE_INTERFACE_DATA deviceInfo;
+	HDEVINFO                            deviceInfoList;
+	SP_DEVICE_INTERFACE_DATA            deviceInfo;
 	SP_DEVICE_INTERFACE_DETAIL_DATA     *deviceDetails = NULL;
 	DWORD                               size;
-	
+
 	HIDD_ATTRIBUTES                     deviceAttributes;
 
 	HidD_GetHidGuid(&hidGuid);
@@ -65,47 +65,47 @@ ErrorCode usbOpen(
 
 		/* if there is a assigned handler, close it */
 		if (usbdevhandle != INVALID_HANDLE_VALUE) {
-            		CloseHandle(usbdevhandle);
-            		usbdevhandle = INVALID_HANDLE_VALUE;
-        	}
+			CloseHandle(usbdevhandle);
+			usbdevhandle = INVALID_HANDLE_VALUE;
+		}
 
 		if (!SetupDiEnumDeviceInterfaces(deviceInfoList, 0, &hidGuid, i, &deviceInfo)) {
 			/* finished walk through device list */
-            		break;  
+			break;  
 		}
 
 		/* get size for detail structure */
 		SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, NULL, 0, &size, NULL);
 		if (deviceDetails != NULL)
-		    free(deviceDetails);
+			free(deviceDetails);
 		deviceDetails = malloc(size);
 		deviceDetails->cbSize = sizeof(*deviceDetails);
 
 		/* now get details */
-	        SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, deviceDetails, size, &size, NULL);
+		SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, deviceDetails, size, &size, NULL);
 
 		/* try to open device */
-        	usbdevhandle = CreateFile(deviceDetails->DevicePath, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-        	if (usbdevhandle == INVALID_HANDLE_VALUE) {
+		usbdevhandle = CreateFile(deviceDetails->DevicePath, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+		if (usbdevhandle == INVALID_HANDLE_VALUE) {
 			/* cannot open device, go to next */
 			continue;
 		}
 
 		/* get attributes for this device */
 		deviceAttributes.Size = sizeof(deviceAttributes);
-        	HidD_GetAttributes(usbdevhandle, &deviceAttributes);
-        	if (deviceAttributes.VendorID != vendorID || deviceAttributes.ProductID != productID) {
+		HidD_GetAttributes(usbdevhandle, &deviceAttributes);
+		if (deviceAttributes.VendorID != vendorID || deviceAttributes.ProductID != productID) {
 			/* device doesn't match, go to next */
-            		continue;
+			continue;
 		}
 
-		 HidD_GetPreparsedData(usbdevhandle, &HidParsedData);   
-            
-         /* extract the capabilities info */   
-         HidP_GetCaps(HidParsedData ,&Capabilities);   
-            
-         /* Free the memory allocated when getting the preparsed data */   
-         HidD_FreePreparsedData(HidParsedData);         
+		HidD_GetPreparsedData(usbdevhandle, &HidParsedData);
+
+		/* extract the capabilities info */
+		HidP_GetCaps(HidParsedData ,&Capabilities);
+
+		/* Free the memory allocated when getting the preparsed data */
+		HidD_FreePreparsedData(HidParsedData);
 
 		/* okay, here we found our device */
 		status = ERR_NONE;
@@ -115,7 +115,7 @@ ErrorCode usbOpen(
 	SetupDiDestroyDeviceInfoList(deviceInfoList);
 
 	if (deviceDetails != NULL)
-        	free(deviceDetails);
+		free(deviceDetails);
 
 	return status;
 }
@@ -159,7 +159,7 @@ ErrorCode usbWrite(
 //			printf("usb read failed, Error %u\n", GetLastError());
 			return ERR_USB_READ;
 		}
-	
+
 #ifdef DEBUG
 		(void)puts("Done reading\nReceived:");
 		for(i=0;i<8;i++) (void)printf("%02x ",usbBuf[i]);
