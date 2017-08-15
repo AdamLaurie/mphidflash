@@ -105,6 +105,8 @@
 #define DEVICE_FAMILY_PIC18 0x01
 #define DEVICE_FAMILY_PIC24 0x02
 #define DEVICE_FAMILY_PIC32 0x03
+// PIC16 identification per Microchip documentation, but reference code for IC16F145x returns 1
+#define DEVICE_FAMILY_PIC16 0x04
 
 /* Error codes returned by various functions */
 

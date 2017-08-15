@@ -190,17 +190,21 @@ int main(
 			(void)printf("Device family: ");
  			switch (devQuery.DeviceFamily)
 				{
-				case DEVICE_FAMILY_PIC18:
+				case DEVICE_FAMILY_PIC18: // PIC16 per experience
 					hexSetBytesPerAddress(1);
-					(void)printf("PIC18\n");
+					(void)printf("PIC18 (or PIC16)\n");
 					break;
 				case DEVICE_FAMILY_PIC24:
 					hexSetBytesPerAddress(2);
-					(void)printf("PIC24\n");
+					(void)printf("PIC24 or dsPIC33\n");
 					break;
 				case DEVICE_FAMILY_PIC32:
 					hexSetBytesPerAddress(1);
 					(void)printf("PIC32\n");
+					break;
+				case DEVICE_FAMILY_PIC16: // PIC16 per documentation
+					hexSetBytesPerAddress(2);
+					(void)printf("PIC16\n");
 					break;
 				default:
 					hexSetBytesPerAddress(1);
