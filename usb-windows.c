@@ -7,6 +7,11 @@
 
  History     : 2009-12-26  Thomas Fischl, Dominik Fisch (www.FundF.net)
                  * Initial windows support
+               2017-08-15  Tony Naggs
+                 * Filter HID devices by USB VID & PID before trying to open.
+                 * If Bootloader is not found retry the search a few times,
+                   as Windows device initialisation after connect can be a
+                   little slow.
 
  License     : Copyright (C) 2009 Thomas Fischl, Dominik Fisch (www.FundF.net)
 
@@ -72,37 +77,67 @@ unsigned char *      usbBuf = &usbBufX[1];
 HIDP_CAPS       Capabilities;
 PHIDP_PREPARSED_DATA        HidParsedData;
 
+// private to file
+static ErrorCode tryUsbOpen(
+  const unsigned short vendorID,
+  const unsigned short productID);
+
+
 ErrorCode usbOpen(
   const unsigned short vendorID,
   const unsigned short productID)
 {
 	ErrorCode   status = ERR_DEVICE_NOT_FOUND;
+	unsigned    tries;
+	const unsigned  max_tries = 6;
+	const DWORD delay_ms = 100;
+
+	/* first try after connecting often fails, whilst Windows initializes device */
+	for (tries = 0; (tries < max_tries) && (ERR_DEVICE_NOT_FOUND == status); tries++) {
+		if (tries != 0)
+			Sleep(delay_ms); // ms
+		status = tryUsbOpen(vendorID, productID);
+	}
+
+#ifdef DEBUG
+	if ((ERR_NONE == status) && tries)
+		(void)printf("\nSuccess opening Bootloader after %u ms", tries * delay_ms);
+#endif
+	return status;
+}
+
+ErrorCode tryUsbOpen(
+  const unsigned short vendorID,
+  const unsigned short productID)
+{
+	ErrorCode                           status = ERR_DEVICE_NOT_FOUND;
 	int i;
 	GUID                                hidGuid;
 	HDEVINFO                            deviceInfoList;
 	SP_DEVICE_INTERFACE_DATA            deviceInfo;
 	SP_DEVICE_INTERFACE_DETAIL_DATA     *deviceDetails = NULL;
 	DWORD                               size;
+	char                                pathPrefix[40];
+	int                                 prefixLength;
+	HRESULT hr;
 
-	HIDD_ATTRIBUTES                     deviceAttributes;
+	// expected start of DevicePath specifies the USB Vendor & Product Identities
+	hr = StringCchPrintf(pathPrefix, ARRAYSIZE(pathPrefix), "\\\\?\\hid#vid_%04x&pid_%04x#", vendorID, productID);
+	if (FAILED(hr)) {
+		fprintf(stderr, "internal error calling StringCchPrintf in " __FILE__ );
+		return ERR_USB_OPEN;
+	}
+	prefixLength = strlen(pathPrefix);
 
 	HidD_GetHidGuid(&hidGuid);
 	deviceInfoList = SetupDiGetClassDevs(&hidGuid, NULL, NULL, DIGCF_PRESENT | DIGCF_INTERFACEDEVICE);
 
+	if (INVALID_HANDLE_VALUE == deviceInfoList)
+		return status; // no HID devices connected
+
 	deviceInfo.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 
-	for (i = 0;;i++) {
-
-		/* if there is a assigned handler, close it */
-		if (usbdevhandle != INVALID_HANDLE_VALUE) {
-			CloseHandle(usbdevhandle);
-			usbdevhandle = INVALID_HANDLE_VALUE;
-		}
-
-		if (!SetupDiEnumDeviceInterfaces(deviceInfoList, 0, &hidGuid, i, &deviceInfo)) {
-			/* finished walk through device list */
-			break;  
-		}
+	for (i = 0; SetupDiEnumDeviceInterfaces(deviceInfoList, 0, &hidGuid, i, &deviceInfo); i++) {
 
 		/* get size for detail structure */
 		SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, NULL, 0, &size, NULL);
@@ -114,18 +149,17 @@ ErrorCode usbOpen(
 		/* now get details */
 		SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, deviceDetails, size, &size, NULL);
 
-		/* try to open device */
-		usbdevhandle = CreateFile(deviceDetails->DevicePath, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-		if (usbdevhandle == INVALID_HANDLE_VALUE) {
-			/* cannot open device, go to next */
+		/* check for expected USB VID & PID in device path before opening device */
+		if (strncasecmp(deviceDetails->DevicePath, pathPrefix, prefixLength)) {
 			continue;
 		}
 
-		/* get attributes for this device */
-		deviceAttributes.Size = sizeof(deviceAttributes);
-		HidD_GetAttributes(usbdevhandle, &deviceAttributes);
-		if (deviceAttributes.VendorID != vendorID || deviceAttributes.ProductID != productID) {
-			/* device doesn't match, go to next */
+		/* try to open device */
+		usbdevhandle = CreateFile(deviceDetails->DevicePath, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+		if (usbdevhandle == INVALID_HANDLE_VALUE) {
+			fprintf(stderr, "Warning: matching device found, but cannot open usb device. (System Error %u)\n", GetLastError());
+			/* cannot open device, go to next */
+			status = ERR_USB_OPEN;
 			continue;
 		}
 

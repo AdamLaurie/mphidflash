@@ -1,4 +1,9 @@
 2017-08-15 Tony Naggs
+	* Candidate Release 1.9
+	* Minor implementation changes for Windows, including checking for USB VID
+	  & PID match expected values before opening each HID device, and to keep
+	  trying to find the HID Bootloader for a short while in case Windows is
+	  still configuring it.
 	* Add support of Microsoft Visual C for building for Windows.
 	* (minor) Stanardise code indentation with tabs (for main.c, hex.c &
 	  usb-windows.c, other files not touched), as there was a horrible mixture
