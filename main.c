@@ -34,6 +34,12 @@
 
  ****************************************************************************/
 
+#if defined(_MSC_VER)
+// MSVC - disable 'non-secure function' warnings for sscanf() etc before including stdio.h
+#define _CRT_NONSTDC_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include "mphidflash.h"
@@ -68,6 +74,7 @@ int main(
 	             eol;        /* 1 = last command-line arg */
 	ErrorCode    status    = ERR_NONE;
 	int          i;
+	// default USB Vendor & Product Ids for various Microchip Bootloaders
 	unsigned int vendorID  = 0x04d8,
 	             productID = 0x003c;
 

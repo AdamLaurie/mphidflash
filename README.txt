@@ -96,6 +96,10 @@ This will create a .exe in the binaries sub-directory, which can be called
 from the Windows commmand line - e.g. 'mphidflash-1.6-win-32.exe'. You should 
 copy this file somewhere on your executable path and rename it to 'mphidflash.exe'.
 
+Additionally for Windows you can use Microsoft Visual Studio C (tested with MSVC
+2010); open the mphidflash.sln solution. You will also need the Windows DDK 
+(Device Development Kit) installed for some .h & .lib files. There are 3 places
+in usb_windows.c that need to be edited to match your DDK install location.
 
 Usage
 =====

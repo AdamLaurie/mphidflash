@@ -37,6 +37,19 @@
 #ifndef _MPHIDFLASH_H_
 #define _MPHIDFLASH_H_
 
+#if defined(_MSC_VER)
+// MSVC
+#define strncasecmp _strnicmp
+#ifdef _DEBUG
+#define DEBUG
+#endif
+#if defined(_M_IX86)
+#define i386
+#elif defined(_M_AMD64)
+#define __x86_64__
+#endif
+#endif
+
 #ifdef DEBUG
 #define DEBUGMSG(str) (void)puts(str); fflush(stdout);
 #else
@@ -60,7 +73,7 @@
 #endif /* i386 || __x86_64__ */
 
 /* Helper function to convert to correct endianess */
-#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
 #define convertEndian(x) __builtin_bswap32(x)
 #else
 #define convertEndian(x) x
@@ -69,8 +82,8 @@
 /* Values derived from Microchip HID Bootloader source */
 
 /* Bootloader commands */
-#define	QUERY_DEVICE      0x02
-#define	UNLOCK_CONFIG     0x03
+#define QUERY_DEVICE      0x02
+#define UNLOCK_CONFIG     0x03
 #define ERASE_DEVICE      0x04
 #define PROGRAM_DEVICE    0x05
 #define PROGRAM_COMPLETE  0x06

@@ -31,11 +31,41 @@
 #include <stdio.h>
 #include <windows.h>
 #include <setupapi.h>
+#include <strsafe.h>
+#if !defined (_MSC_VER)
+// headers are distributed with mingw compiler
 #include <ddk/hidsdi.h>
 #include <ddk/hidpi.h>
+#else
+// MS Visual C
+// headers from the Device (driver) Development Kit, fixup paths for your system
+#include "C:\WinDDK\7600.16385.1\inc\api\hidsdi.h"
+#include "C:\WinDDK\7600.16385.1\inc\api\hidpi.h"
+#endif
 #include "mphidflash.h"
 
-HANDLE usbdevhandle = INVALID_HANDLE_VALUE; 
+#if defined(_MSC_VER)
+// tell linker about libraries required in order to use extra Windows DLLs
+// fixup path for your DDK install, & build target subdirectory
+#define MS_DDK_LIB_ROOT "C:\\WinDDK\\7600.16385.1\\lib\\win7\\"
+#if defined(_M_IX86)
+#define MS_DDK_LIB_TARGET "i386\\"
+#elif defined(_M_AMD64)
+#define MS_DDK_LIB_TARGET "amd64\\"
+#elif defined(_M_IA64)
+#define MS_DDK_LIB_TARGET "ia64\\"
+#endif
+#pragma comment(lib, MS_DDK_LIB_ROOT MS_DDK_LIB_TARGET "SetupAPI.lib")
+#pragma comment(lib, MS_DDK_LIB_ROOT MS_DDK_LIB_TARGET "hid.lib")
+// warn that VERSION_MAIN & VERSION_SUB are defined in MSVC project, (Linux, OSX, mingw use a makefile)
+#define STRINGIZE2(x) #x
+#define STRINGIZE(x) STRINGIZE2(x)
+#pragma message("Building mphidflash version " STRINGIZE(VERSION_MAIN) "." STRINGIZE(VERSION_SUB) " (VERSION_MAIN and VERSION_SUB are defined in MSVC project properties)" )
+#undef STRINGIZE
+#undef STRINGIZE2
+#endif
+
+HANDLE usbdevhandle = INVALID_HANDLE_VALUE;
 unsigned char        usbBufX[65];
 unsigned char *      usbBuf = &usbBufX[1];
 
@@ -78,7 +108,7 @@ ErrorCode usbOpen(
 		SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, NULL, 0, &size, NULL);
 		if (deviceDetails != NULL)
 			free(deviceDetails);
-		deviceDetails = malloc(size);
+		deviceDetails = (SP_DEVICE_INTERFACE_DETAIL_DATA*) malloc(size);
 		deviceDetails->cbSize = sizeof(*deviceDetails);
 
 		/* now get details */

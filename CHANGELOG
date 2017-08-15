@@ -1,4 +1,5 @@
 2017-08-15 Tony Naggs
+	* Add support of Microsoft Visual C for building for Windows.
 	* (minor) Stanardise code indentation with tabs (for main.c, hex.c &
 	  usb-windows.c, other files not touched), as there was a horrible mixture
 	  of tabs, 2 spaces & 4 spaces in some functions.

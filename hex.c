@@ -28,10 +28,21 @@
 
  ****************************************************************************/
 
+#if defined(_MSC_VER)
+// MSVC - disable 'non-secure function' warnings for sscanf() etc before including stdio.h
+#define _CRT_NONSTDC_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#define WIN
+#endif
+
 #include <stdio.h>
 #include <ctype.h>
 #include <fcntl.h>
+#if defined(_MSC_VER)
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 #include <string.h>
 
 #ifndef WIN
@@ -93,13 +104,15 @@ ErrorCode hexOpen(char * const filename)
 				return ERR_NONE;
 			}
 #else
-			HANDLE handle;
-			handle = CreateFileMapping((HANDLE)_get_osfhandle(hexFd), NULL, PAGE_WRITECOPY, 0, 0, NULL);
-			if (handle != NULL) {
-				hexFileData = MapViewOfFile(handle, FILE_MAP_COPY, 0, 0, hexFileSize);
-				hexPlusOne = &hexFileData[1];
-				CloseHandle(handle); 
-				return ERR_NONE;
+			{
+				HANDLE handle;
+				handle = CreateFileMapping((HANDLE)_get_osfhandle(hexFd), NULL, PAGE_WRITECOPY, 0, 0, NULL);
+				if (handle != NULL) {
+					hexFileData = (char *) MapViewOfFile(handle, FILE_MAP_COPY, 0, 0, hexFileSize);
+					hexPlusOne = &hexFileData[1];
+					CloseHandle(handle); 
+					return ERR_NONE;
+				}
 			}
 #endif
 
@@ -113,9 +126,11 @@ ErrorCode hexOpen(char * const filename)
 }
 
 /* check memory address & length are in a programmable memory area, as reported by device's Bootloader */
-static int verifyBlockProgrammable( unsigned int *addr, char *len )
+static int verifyBlockProgrammable( unsigned int *addr, unsigned int *len )
 {
-	int i, isA, isL, MA, ML;
+	int i, isA, isL;
+	unsigned int MA , ML;
+
 	for ( i = 0; i < devQuery.memBlocks; i++ )
 	{
 		/* only look at programmable memory blocks */
@@ -173,14 +188,14 @@ static int verifyBlockProgrammable( unsigned int *addr, char *len )
  Function    : issueBlock
  Description : Send data over USB bus to device.
  Parameters  : unsigned int  Destination address on PIC device.
-               char          Byte count (max 56).
+               unsigned int  Byte count (max 56).
                char          Verify vs. write.
  Returns     : ErrorCode     ERR_NONE on success, or error code as returned
                              from usbWrite();
  ****************************************************************************/
 static ErrorCode issueBlock(
   unsigned int  addr,
-  char          len,
+  unsigned int  len,
   char          verify)
 {
 	ErrorCode status;
@@ -223,7 +238,7 @@ static ErrorCode issueBlock(
 		usbBuf[0] = GET_DATA;
 		if(ERR_NONE == (status = usbWrite(6,1))) {
 #ifdef DEBUG
-			int i;
+			unsigned int i;
 			if(memcmp(&usbBuf[64 - len],hexBuf,len)) {
 				(void)puts("Verify FAIL\nExpected:");
 				(void)printf("NA NA NA NA NA NA NA NA - ");
@@ -282,8 +297,7 @@ ErrorCode hexWrite(const char verify)
 	char         *ptr,pass;
 	ErrorCode     status;
 	int           checksum,i,end,offset;
-	short         bufLen;
-	unsigned int  len,type,addrHi,addrLo,addr32,addrSave;
+	unsigned int  len,bufLen,type,addrHi,addrLo,addr32,addrSave;
 
 	for(pass=0;pass<=verify;pass++) {
 		offset   = 0; /* Start at beginning of hex file         */
