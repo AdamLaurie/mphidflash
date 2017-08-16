@@ -139,6 +139,7 @@ typedef enum
 	ERR_NO_PROGRAM_MEMORY,
 	ERR_RESPONSE_HAS_WRONG_COMMAND,
 	ERR_BAD_PACKET_DATA_FIELD_SIZE,
+	ERR_SIGN_FLASH,
 	ERR_EOL              /* End-of-list, not actual error code */
 } ErrorCode;
 

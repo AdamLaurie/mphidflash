@@ -1,5 +1,6 @@
 2017-08-15 Tony Naggs
 	* Candidate Release 1.9
+	* Test if Signing Flash succeeded (whether device responds to a new QUERY_DEVICE)
 	* Refetch memory block info after Unlocking Config memory (reqd for PIC24 Bootloader)
 	* Sanity checks on info from QUERY_DEVICE, e.g. mem blocks do not overlap.
 	* Minor implementation changes for Windows, including checking for USB VID

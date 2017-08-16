@@ -254,6 +254,7 @@ int main(
 		"Device has no program memory block",
 		"Device response has unexpected command value",
 		"Device reports unexpected Packet Data Field Size",
+		"Signing Flash failed",
 	};
 
 	/* To create a sensible sequence of operations, all command-line
@@ -397,6 +398,15 @@ int main(
 			(void)puts("Signing flash...");
 			usbBuf[0] = SIGN_FLASH;
 			status = usbWrite(1,0);
+			if (ERR_NONE == status) {
+				/* Send another Query as it gives a result when
+				   device is ready, but Sign Flash doesn't by itself */
+				usbBuf[0] = QUERY_DEVICE;
+				status    = usbWrite(1,1);
+			}
+			if (ERR_NONE != status) {
+				status = ERR_SIGN_FLASH;
+			}
 		}
 
 		if((ERR_NONE == status) && (actions & ACTION_RESET)) {
