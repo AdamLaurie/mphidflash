@@ -11,7 +11,12 @@
                2010-12-28  Petr Olivka
                  * program and verify only data for defined memory areas
                  * send only even length of data to PIC
-               
+               2017-08-16  Tony Naggs
+                 * Sanity checks on QUERY_DEVICE results, good practice
+                   and should reject custom Booloaders with private info
+                   in the memory block list, e.g. Pinguino PIC32
+                 * after Unlock op refetch memory block info, per documentation
+
  License     : Copyright (C) 2009 Phillip Burgess
                Copyright (C) 2009 Thomas Fischl, Dominik Fisch (www.FundF.net)
                Copyright (C) 2010 Petr Olivka
@@ -59,6 +64,153 @@ extern unsigned char * usbBuf;  /* In usb code */
 #define ACTION_RESET  (1 << 3)
 #define ACTION_SIGN   (1 << 4)
 
+/*
+ * deviceQueryProcessResult() - parses memory block & other info in QUERY_DEVICE result
+ * call 1st time with doExtendedQuery <> 0 to detect Bootloader v1.01 (requires SIGN_FLASH
+ * after programming), and supports QUERY_EXTENDED_INFO command.
+ * If Unlocking Config Memory in device should call again, (with doExtendedQuery == 0)
+ * to ensure we have correct details of Config Memory location.
+ */
+static ErrorCode deviceQueryProcessResult(
+  char doExtendedQuery)
+{
+	char         hasProgramMemory = 0;
+	char         hasConfigMemory = 0;
+	int          i = 0, j;
+	char         *name = NULL;
+	unsigned int tempaddr;
+
+	memcpy( &devQuery, usbBuf, 64 );
+
+	// bad values here probably indicate a garbage response
+	if (QUERY_DEVICE != devQuery.Command)
+		return ERR_RESPONSE_HAS_WRONG_COMMAND;
+
+	if (56 != devQuery.PacketDataFieldSize) {
+		// we have hardcoded assumptions this will be 56 & total buffer of 64
+		fprintf(stderr, "Reported Packet Data Field Size is %d\n",
+			devQuery.PacketDataFieldSize);
+		return ERR_BAD_PACKET_DATA_FIELD_SIZE;
+	}
+
+	// count how many memory blocks are defined
+	while ( (devQuery.mem[ i ].Type != TypeEndOfTypeList) && (i < MAX_DATA_REGIONS) )
+		i++;
+	devQuery.memBlocks = i;
+
+	switch (devQuery.DeviceFamily)
+		{
+		case DEVICE_FAMILY_PIC18: // PIC16 per experience
+			hexSetBytesPerAddress(1);
+			name = "PIC18 (or PIC16)";
+			break;
+		case DEVICE_FAMILY_PIC24:
+			hexSetBytesPerAddress(2);
+			name = "PIC24 or dsPIC33";
+			break;
+		case DEVICE_FAMILY_PIC32:
+			hexSetBytesPerAddress(1);
+			name = "PIC32";
+			break;
+		case DEVICE_FAMILY_PIC16: // PIC16 per documentation
+			hexSetBytesPerAddress(2);
+			name = "PIC16";
+			break;
+		default:
+			hexSetBytesPerAddress(1);
+			name = "Unknown. Bytes per address set to 1.";
+			break;
+	}
+	if (doExtendedQuery)
+		(void)printf("Device family: %s\n", name);
+	else
+		(void)puts("Refetching memory block information...");
+
+	if (!doExtendedQuery && !hasConfigMemory)
+		(void)puts("No Config Memory found after unlocking");
+
+	// endian conversion, report available memory
+	for ( i = 0; i < devQuery.memBlocks; i++ ) {
+		name = NULL;
+		devQuery.mem[i].Address = convertEndian(devQuery.mem[i].Address);
+		devQuery.mem[i].Length = convertEndian(devQuery.mem[i].Length);
+		switch(devQuery.mem[i].Type)
+			{
+			case TypeProgramMemory:
+				name = "Program";
+				hasProgramMemory = 1;
+				break;
+			case TypeEEPROM:
+				name = "EEPROM";
+				break;
+			case TypeConfigWords:
+				name = "Config";
+				hasConfigMemory = 1;
+				break;
+			case TypeUserID:
+				name = "User ID";
+				break;
+			default:
+				break;
+		}
+
+		if (name)
+			(void)printf(name);
+		else
+			(void)printf("Unknown (type id %d)");
+		(void)printf(" memory at 0x%x: %d bytes free\n",
+			devQuery.mem[i].Address, devQuery.mem[i].Length);
+	}
+
+	// sanity checks
+	for ( i = 0; i < devQuery.memBlocks; i++ ) {
+		// memory type 0 not defined by Microchip, & used in mphidflash to disable programming
+		if(0 == devQuery.mem[i].Type)
+			return ERR_BAD_MEM_TYPE;
+
+		// sane info for block length?
+		if (devQuery.mem[i].Length == 0) {
+			return ERR_BAD_MEM_LENGTH;
+		} else if ((bytesPerAddress > 1) &&
+				(0 != (devQuery.mem[i].Length % bytesPerAddress))) {
+			return ERR_BAD_MEM_LENGTH2;
+		}
+
+		// TODO check memory address makes sense for PIC18, PIC24, etc
+
+		// each block type is defined max one time, must not overlap other blocks
+		for (j = 0; j < i; j++) {
+			// we expect each memory block type to be listed only once
+			// (based on reviewing Microchip's published reference code)
+			if ((devQuery.mem[i].Type) == (devQuery.mem[j].Type)) {
+				return ERR_MEM_BLOCK_TYPE_REPEATS;
+			}
+			// memory blocks should not overlap
+			if (devQuery.mem[i].Address == devQuery.mem[j].Address) {
+				return ERR_OVERLAPPING_MEM_BLOCKS;
+			} else if (devQuery.mem[i].Address < devQuery.mem[j].Address) {
+				tempaddr = devQuery.mem[i].Address + (devQuery.mem[i].Length / bytesPerAddress);
+				if (tempaddr >= devQuery.mem[j].Address) {
+					return ERR_OVERLAPPING_MEM_BLOCKS;
+				}
+			} else {
+				tempaddr = devQuery.mem[j].Address + (devQuery.mem[j].Length / bytesPerAddress);
+				if (tempaddr >= devQuery.mem[i].Address) {
+					return ERR_OVERLAPPING_MEM_BLOCKS;
+				}
+			}
+		}
+	} // sanity iter over blocks
+
+	if (!hasProgramMemory) {
+		return ERR_NO_PROGRAM_MEMORY;
+	}
+
+	// TODO check for Bootloader v1.01: supports SIGN_FLASH & QUERY_EXTENDED_INFO
+	return ERR_NONE;
+}
+
+
 /****************************************************************************
  Function    : main
  Description : mphidflash program startup; parse command-line input and issue
@@ -93,7 +245,15 @@ int main(
 		"Unrecognized or invalid hex file syntax",
 		"Bad end-of-line checksum in hex file",
 		"Unsupported record type in hex file",
-		"Verify failed"
+		"Verify failed (is device connected to a powered root or hub?)",
+		"Bad memory type (0) in device memory list",
+		"Memory block length is bad (0, too big)",
+		"Memory block length is not multiple of 2", // for PIC24
+		"Memory blocks overlap",
+		"Memory block type defined more than once",
+		"Device has no program memory block",
+		"Device response has unexpected command value",
+		"Device reports unexpected Packet Data Field Size",
 	};
 
 	/* To create a sensible sequence of operations, all command-line
@@ -175,44 +335,7 @@ int main(
 		(void)printf("USB HID device found");
 		usbBuf[0] = QUERY_DEVICE;
 		if(ERR_NONE == (status = usbWrite(1,1))) {
-			memcpy( &devQuery, usbBuf, 64 );
-			i = 0;
-			while ( devQuery.mem[ i ].Type != TypeEndOfTypeList ) i++;
-			devQuery.memBlocks = i;
-			for ( i = 0; i < devQuery.memBlocks; i++ ) {
-				devQuery.mem[i].Address = convertEndian(devQuery.mem[i].Address);
-				devQuery.mem[i].Length = convertEndian(devQuery.mem[i].Length);
-				if(devQuery.mem[i].Type == TypeProgramMemory) {
-					(void)printf(": %d bytes free\n",devQuery.mem[i].Length);
-				}
-			}
-
-			(void)printf("Device family: ");
- 			switch (devQuery.DeviceFamily)
-				{
-				case DEVICE_FAMILY_PIC18: // PIC16 per experience
-					hexSetBytesPerAddress(1);
-					(void)printf("PIC18 (or PIC16)\n");
-					break;
-				case DEVICE_FAMILY_PIC24:
-					hexSetBytesPerAddress(2);
-					(void)printf("PIC24 or dsPIC33\n");
-					break;
-				case DEVICE_FAMILY_PIC32:
-					hexSetBytesPerAddress(1);
-					(void)printf("PIC32\n");
-					break;
-				case DEVICE_FAMILY_PIC16: // PIC16 per documentation
-					hexSetBytesPerAddress(2);
-					(void)printf("PIC16\n");
-					break;
-				default:
-					hexSetBytesPerAddress(1);
-					(void)printf("Unknown. Bytes per address set to 1.\n");
-					break;
-			}
-
-
+			status = deviceQueryProcessResult(1);
 		}
 		(void)putchar('\n');
 
@@ -221,6 +344,12 @@ int main(
 			usbBuf[0] = UNLOCK_CONFIG;
 			usbBuf[1] = UNLOCKCONFIG;
 			status    = usbWrite(2,0);
+			// redo DEVICE_QUERY & process memory block info again
+			// for Bootloader versions that only report Config mem after Unlock
+			usbBuf[0] = QUERY_DEVICE;
+			if((ERR_NONE == status) && (ERR_NONE == (status = usbWrite(1,1)))) {
+				status = deviceQueryProcessResult(0);
+			}
 		}
 		// disable all configuration blocks in devQuery if locked
 		if ( !( actions & ACTION_UNLOCK ) ) {
@@ -242,15 +371,17 @@ int main(
 			(void)puts("Erasing...");
 			usbBuf[0] = ERASE_DEVICE;
 			status    = usbWrite(1,0);
-			/* The query here isn't needed for any technical
-			   reason, just makes the presentation better.
-			   The ERASE_DEVICE command above returns
-			   immediately...subsequent commands can be made
-			   but will pause until the erase cycle completes.
-			   So this query just keeps the "Writing" message
-			   or others from being displayed prematurely. */
-			usbBuf[0] = QUERY_DEVICE;
-			status    = usbWrite(1,1);
+			if (ERR_NONE == status) {
+				/* The query here isn't needed for any technical
+				   reason, just makes the presentation better.
+				   The ERASE_DEVICE command above returns
+				   immediately...subsequent commands can be made
+				   but will pause until the erase cycle completes.
+				   So this query just keeps the "Writing" message
+				   or others from being displayed prematurely. */
+				usbBuf[0] = QUERY_DEVICE;
+				status    = usbWrite(1,1);
+			}
 		}
 
 		if(hexFile) {

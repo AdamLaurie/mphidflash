@@ -1,5 +1,7 @@
 2017-08-15 Tony Naggs
 	* Candidate Release 1.9
+	* Refetch memory block info after Unlocking Config memory (reqd for PIC24 Bootloader)
+	* Sanity checks on info from QUERY_DEVICE, e.g. mem blocks do not overlap.
 	* Minor implementation changes for Windows, including checking for USB VID
 	  & PID match expected values before opening each HID device, and to keep
 	  trying to find the HID Bootloader for a short while in case Windows is

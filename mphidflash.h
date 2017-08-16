@@ -99,7 +99,10 @@
 #define TypeProgramMemory 0x01
 #define TypeEEPROM        0x02
 #define TypeConfigWords   0x03
+#define TypeUserID        0x04
 #define TypeEndOfTypeList 0xFF
+
+#define MAX_DATA_REGIONS  6
 
 /* Device family */
 #define DEVICE_FAMILY_PIC18 0x01
@@ -128,6 +131,14 @@ typedef enum
 	ERR_HEX_CHECKSUM,
 	ERR_HEX_RECORD,
 	ERR_VERIFY,
+	ERR_BAD_MEM_TYPE,
+	ERR_BAD_MEM_LENGTH,
+	ERR_BAD_MEM_LENGTH2,
+	ERR_OVERLAPPING_MEM_BLOCKS,
+	ERR_MEM_BLOCK_TYPE_REPEATS,
+	ERR_NO_PROGRAM_MEMORY,
+	ERR_RESPONSE_HAS_WRONG_COMMAND,
+	ERR_BAD_PACKET_DATA_FIELD_SIZE,
 	ERR_EOL              /* End-of-list, not actual error code */
 } ErrorCode;
 
@@ -160,6 +171,8 @@ typedef struct {
   } sQuery;
 
 extern sQuery devQuery;
+
+extern unsigned char bytesPerAddress;
 
 #pragma pack( pop )
 
