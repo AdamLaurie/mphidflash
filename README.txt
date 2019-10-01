@@ -16,7 +16,7 @@ the PIC32 HID Bootloader uses the same default USB Product Id as the supported
 HID Bootloader. If used in error either 'mphidflash' or the development board
 may freeze or indicate an error.
 
-The 'mphidflash' project is hosted at https://github.com/ApertureLabsLtd/mphidflash
+The 'mphidflash' project is hosted at https://github.com/AdamLaurie/mphidflash
 (migrated from http://code.google.com/p/mphidflash/)
 
 Building and Installing
