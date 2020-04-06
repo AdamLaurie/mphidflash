@@ -116,6 +116,7 @@ typedef enum
 	ERR_EOL              /* End-of-list, not actual error code */
 } ErrorCode;
 
+
 /* Function prototypes */
 
 extern ErrorCode
@@ -127,6 +128,7 @@ extern void
 	hexClose(void),
 	usbClose(void),
 	hexSetBytesPerAddress(unsigned char);
+extern unsigned char hexGetBytesPerAddress(void);
 
 #pragma pack( push )
 #pragma pack( 1 )
