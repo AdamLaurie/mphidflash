@@ -63,6 +63,16 @@ void hexSetBytesPerAddress(unsigned char bytes)
 bytesPerAddress = bytes; 		
 }
 
+/**************************************************************************** 		
+Function : hexGetBytesPerAddress 		
+Description : returns set byte width 		
+Parameters : Nothing (void)  		
+Returns : unsigned char Bytes per address 		
+****************************************************************************/ 
+unsigned char hexGetBytesPerAddress(void){
+    return bytesPerAddress;
+}
+
 /****************************************************************************
  Function    : hexOpen
  Description : Open and memory-map an Intel hex file.
@@ -124,7 +134,7 @@ static int verifyBlockProgrammable( unsigned int *addr, char *len )
 
 		/* calc if first or last address is in this block */
 		MA = devQuery.mem[ i ].Address;
-		ML = devQuery.mem[ i ].Length;
+		ML = devQuery.mem[ i ].Length * bytesPerAddress;
 		isA = ( *addr >= MA ) && ( *addr < MA + ML );
 		isL = ( *addr + *len > MA ) && ( *addr + *len <= MA + ML );
 

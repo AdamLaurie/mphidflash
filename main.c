@@ -165,22 +165,15 @@ int main(
 
 		/* And start doing stuff... */
 
-		(void)printf("USB HID device found");
+		(void)printf("USB HID device found\n");
 		usbBuf[0] = QUERY_DEVICE;
 		if(ERR_NONE == (status = usbWrite(1,1))) {
 			memcpy( &devQuery, usbBuf, 64 );
 			i = 0;
 			while ( devQuery.mem[ i ].Type != TypeEndOfTypeList ) i++;
 			devQuery.memBlocks = i;
-			for ( i = 0; i < devQuery.memBlocks; i++ ) {
-			  devQuery.mem[i].Address = convertEndian(devQuery.mem[i].Address);
-			  devQuery.mem[i].Length = convertEndian(devQuery.mem[i].Length);
-			  if(devQuery.mem[i].Type == TypeProgramMemory) {
-			    (void)printf(": %d bytes free\n",devQuery.mem[i].Length);
-			    }
-			}
-
-			(void)printf("Device family: ");
+			
+            (void)printf("Device family: ");
  			switch (devQuery.DeviceFamily)
 				{
 				case DEVICE_FAMILY_PIC18:
@@ -200,8 +193,14 @@ int main(
 					(void)printf("Unknown. Bytes per address set to 1.\n");
 					break;
 			}
-
-
+            (void)printf("Memory");   
+            for ( i = 0; i < devQuery.memBlocks; i++ ) {
+			  devQuery.mem[i].Address = convertEndian(devQuery.mem[i].Address);
+			  devQuery.mem[i].Length = convertEndian(devQuery.mem[i].Length);
+			  if(devQuery.mem[i].Type == TypeProgramMemory) {
+                (void)printf(": %d bytes free, addr: %04x, total %d\n",devQuery.mem[i].Length*hexGetBytesPerAddress(),devQuery.mem[i].Address,devQuery.memBlocks);  
+			    }
+			}
 		}
 		(void)putchar('\n');
 
