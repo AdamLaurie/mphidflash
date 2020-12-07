@@ -33,7 +33,6 @@ mphidflash32: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-$(SYSTEM)-32.exe
 mphidflash32: mphidflash.exe
 
 mphidflash.exe: $(OBJS)
-	$(CC) --version
 	$(CC) $(OBJS) $(LDFLAGS) -o $(EXECPATH)/$(EXEC)
 
 clean:
