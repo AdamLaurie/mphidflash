@@ -1,5 +1,4 @@
-VERSION_MAIN = 1
-VERSION_SUB  = 8
+include version.mk
 SYSTEM       = win
 
 # determine the compiler in reach - it might be a cross-compiler
@@ -33,7 +32,6 @@ mphidflash32: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-$(SYSTEM)-32.exe
 mphidflash32: mphidflash.exe
 
 mphidflash.exe: $(OBJS)
-	$(CC) --version
 	$(CC) $(OBJS) $(LDFLAGS) -o $(EXECPATH)/$(EXEC)
 
 clean:

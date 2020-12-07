@@ -1,5 +1,4 @@
-VERSION_MAIN = 1
-VERSION_SUB  = 8
+include version.mk
 
 CC       = gcc
 OBJS     = main.o hex.o
