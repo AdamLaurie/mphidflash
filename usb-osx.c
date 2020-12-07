@@ -1,6 +1,6 @@
 /****************************************************************************
  File        : usb-osx.c
- Description : Encapsulates all nonportable, Linux-specific USB I/O code
+ Description : Encapsulates all nonportable, OSX-specific USB I/O code
                within the mphidflash program.  Each supported operating
                system has its own source file, providing a common calling
                syntax to the portable sections of the code.
@@ -9,7 +9,7 @@
                  * Initial implementation
                2009-12-26  Thomas Fischl, Dominik Fisch (www.FundF.net)
                  * Renamed 'ubw32' to 'mphidflash'
-               
+
  License     : Copyright (C) 2009 Phillip Burgess
                Copyright (C) 2009 Thomas Fischl, Dominik Fisch (www.FundF.net)
 
@@ -36,8 +36,8 @@
 #include "mphidflash.h"
 
 static IOHIDDeviceDeviceInterface **device = NULL;
-unsigned char        usbBufX[64];
-unsigned char       * usbBuf = usbBufX;
+unsigned char       usbBufX[64];
+unsigned char       *usbBuf = usbBufX;
 
 /****************************************************************************
  Function    : usbCallback
@@ -55,9 +55,9 @@ static void usbCallback(
   uint8_t         *report,
   CFIndex          reportLength)
 {
-	DEBUGMSG("In callback");
-	CFRunLoopStop(CFRunLoopGetCurrent());
-	DEBUGMSG("Exiting callback");
+    DEBUGMSG("In callback");
+    CFRunLoopStop(CFRunLoopGetCurrent());
+    DEBUGMSG("Exiting callback");
 }
 
 /****************************************************************************
@@ -119,7 +119,7 @@ ErrorCode usbOpen(
         (*plugInInterface)->QueryInterface(plugInInterface,
           CFUUIDGetUUIDBytes(kIOHIDDeviceDeviceInterfaceID),(LPVOID)&device);
 
-	(*plugInInterface)->Release(plugInInterface);
+        (*plugInInterface)->Release(plugInInterface);
 
         if(device) {
           status = ERR_USB_OPEN; /* Init phase 1 OK, but not yet open */
@@ -171,34 +171,34 @@ ErrorCode usbWrite(
   const char read)
 {
 #ifdef DEBUG
-	int i;
-	(void)puts("Sending:");
-	for(i=0;i<8;i++) (void)printf("%02x ",((unsigned char *)usbBuf)[i]);
-	(void)printf(": ");
-	for(;i<64;i++) (void)printf("%02x ",((unsigned char *)usbBuf)[i]);
-	(void)putchar('\n'); fflush(stdout);
-	DEBUGMSG("\nAbout to write");
+    int i;
+    (void)puts("Sending:");
+    for(i=0;i<8;i++) (void)printf("%02x ",((unsigned char *)usbBuf)[i]);
+    (void)printf(": ");
+    for(;i<64;i++) (void)printf("%02x ",((unsigned char *)usbBuf)[i]);
+    (void)putchar('\n'); fflush(stdout);
+    DEBUGMSG("\nAbout to write");
 #endif
 
-	if(kIOReturnSuccess != (*device)->setReport(device,
-	  kIOHIDReportTypeOutput,0,usbBuf,len,500,NULL,NULL,0))
-		return ERR_USB_WRITE;
+    if(kIOReturnSuccess != (*device)->setReport(device,
+      kIOHIDReportTypeOutput,0,usbBuf,len,500,NULL,NULL,0))
+        return ERR_USB_WRITE;
 
-	DEBUGMSG("Done w/write");
+    DEBUGMSG("Done w/write");
 
-	if(read) {
-		DEBUGMSG("About to read");
-		CFRunLoopRun(); /* Read invokes callback when done */
+    if(read) {
+        DEBUGMSG("About to read");
+        CFRunLoopRun(); /* Read invokes callback when done */
 #ifdef DEBUG
-		(void)puts("Done reading\nReceived:");
-		for(i=0;i<8;i++) (void)printf("%02x ",usbBuf[i]);
-		(void)printf(": ");
-		for(;i<64;i++) (void)printf("%02x ",usbBuf[i]);
-		(void)putchar('\n'); fflush(stdout);
+        (void)puts("Done reading\nReceived:");
+        for(i=0;i<8;i++) (void)printf("%02x ",usbBuf[i]);
+        (void)printf(": ");
+        for(;i<64;i++) (void)printf("%02x ",usbBuf[i]);
+        (void)putchar('\n'); fflush(stdout);
 #endif
-	}
+    }
 
-	return ERR_NONE;
+    return ERR_NONE;
 }
 
 /****************************************************************************
@@ -211,7 +211,7 @@ ErrorCode usbWrite(
  ****************************************************************************/
 void usbClose(void)
 {
-	(*device)->close(device,0);
-	(*device)->Release(device);
-	device = NULL;
+    (*device)->close(device,0);
+    (*device)->Release(device);
+    device = NULL;
 }
