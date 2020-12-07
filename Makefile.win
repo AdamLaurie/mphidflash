@@ -1,11 +1,16 @@
-VERSION_MAIN = 1
-VERSION_SUB  = 8
+include version.mk
+SYSTEM       = win
 
-CC    = i586-mingw32msvc-gcc
+# determine the compiler in reach - it might be a cross-compiler
+CC32  := $(shell basename `which i586-mingw32msvc-gcc i686-w64-mingw32-gcc | head -n 1`)
+CC64  := $(shell basename `which x86_64-mingw32msvc-gcc x86_64-w64-mingw32-gcc | head -n 1`)
+CC    = $(CC32)
+
 EXECS = mphidflash.exe
+EXECPATH = binaries
 OBJS  = main.o hex.o usb-windows.o
 CFLAGS = -DWIN -DVERSION_MAIN=$(VERSION_MAIN) -DVERSION_SUB=$(VERSION_SUB)
-LDFLAGS = -lhid -lsetupapi 
+LDFLAGS = -lhid -lsetupapi
 
 all: $(EXECS)
 
@@ -14,14 +19,20 @@ all: $(EXECS)
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
 
-# todo: add 64 bit target (low priority as 32 bit works on all platforms)
+mphidflash64: CC = $(CC64)
+mphidflash64: CFLAGS += -m64
+mphidflash64: LDFLAGS += -m64
+mphidflash64: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-$(SYSTEM)-64.exe
+mphidflash64: mphidflash.exe
 
-mphidflash32: CFLAGS += -m32 
+mphidflash32: CC = $(CC32)
+mphidflash32: CFLAGS += -m32
 mphidflash32: LDFLAGS += -m32
+mphidflash32: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-$(SYSTEM)-32.exe
 mphidflash32: mphidflash.exe
 
 mphidflash.exe: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS) -o binaries/mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-win-32.exe
+	$(CC) $(OBJS) $(LDFLAGS) -o $(EXECPATH)/$(EXEC)
 
 clean:
 	rm -f $(EXECS) *.o core

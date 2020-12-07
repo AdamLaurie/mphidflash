@@ -16,7 +16,7 @@ the PIC32 HID Bootloader uses the same default USB Product Id as the supported
 HID Bootloader. If used in error either 'mphidflash' or the development board
 may freeze or indicate an error.
 
-The 'mphidflash' project is hosted at https://github.com/ApertureLabsLtd/mphidflash
+The 'mphidflash' project is hosted at https://github.com/AdamLaurie/mphidflash
 (migrated from http://code.google.com/p/mphidflash/)
 
 Building and Installing
@@ -28,24 +28,24 @@ For Linux, you'll need the 'libhid' development library (and associated
 dependencies) installed, which can be handled by most package managers or
 from the command line:
 
-	sudo apt-get install libhid-dev
+    sudo apt-get install libhid-dev
 
 Assuming you're reading this as the README.txt alongside the source code,
 to compile mphidflash for a 32 or 64 bit system, in the Terminal window type:
 
-	make mphidflash32
+    make mphidflash32
 
   or
 
-	make mphidflash64
+    make mphidflash64
 
 Then install with the command:
 
-	sudo make install32
+    sudo make install32
 
   or
 
-	sudo make install64
+    sudo make install64
 
 This will copy the appropriate executable to /usr/local/bin/mphidflash so you 
 don't need to specify a complete path to the program each time.
@@ -60,19 +60,19 @@ the command line interface.
 Assuming you're reading this as the README.txt alongside the source code,
 to compile mphidflash for a 32 or 64 bit system, in the Terminal window type:
 
-	make mphidflash32
+    make mphidflash32
 
   or
 
-	make mphidflash64
+    make mphidflash64
 
 Then install with the command:
 
-	sudo make install32
+    sudo make install32
 
   or
 
-	sudo make install64
+    sudo make install64
 
 This will copy the appropriate executable to /usr/local/bin/mphidflash so you
 don't need to specify a complete path to the program each time.
@@ -85,14 +85,18 @@ cross compiling on Linux, you'll need the 'mingw32' toolchain (and associated
 dependencies) installed, which can be handled by most package mangager or
 from the command line:
 
-	sudo apt-get install mingw32
+    sudo apt-get install mingw32
 
 Assuming you're reading this as the README.txt alongside the source code,
 to compile mphidflash, in the Terminal window type:
 
-	make -f Makefile.win
+    make win32
 
-This will create a .exe in the binaries sub-directory, which can be called
+  or
+
+    make win64
+
+This will create an .exe in the binaries sub-directory, which can be called
 from the Windows commmand line - e.g. 'mphidflash-1.6-win-32.exe'. You should 
 copy this file somewhere on your executable path and rename it to 'mphidflash.exe'.
 
@@ -104,22 +108,23 @@ in usb_windows.c that need to be edited to match your DDK install location.
 Usage
 =====
 To upload a new program to your PIC, it must be connected to your computer and
-set into bootloader mode. mphidflash can then be used with the following 
+set into bootloader mode. mphidflash can then be used with the following
 options:
 
--help			Display help screen (alternately: -?)
--write <file>	Upload given file to PIC 
--reset			Reset PIC
--noverify		Skip verification step
--erase			Erase PIC memory
--sign			Sign flash
--vendor <hex>	Use given USB vendor id instead of default id
--product <hex>	Use given USB product id instead of default id
+-help           Display help screen (alternately: -?)
+-write <file>   Upload given file to PIC
+-reset          Reset PIC
+-noverify       Skip verification step
+-erase          Erase PIC memory (implicit if -w)
+-unlock         Unlock config mem before erase/write
+-sign           Sign flash (for later versions of boot loader)
+-vendor <hex>   Use given USB vendor id instead of default id 04d8
+-product <hex>  Use given USB product id instead of default id 003c
 
 Example: To upload the program test.hex to the PIC and to reset the PIC thereafter
 the following command line can be used:
 
-	mphidflash -write test.hex -reset
+    mphidflash -write test.hex -reset
 
 Tips
 ====
