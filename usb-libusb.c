@@ -7,7 +7,7 @@
                  * Initial implementation of usb-linux with libhid
                2009-12-28  Thomas Fischl, Dominik Fisch (www.FundF.net)
                  * Support for libusb without dependencies to libhid
-               
+
  License     : Copyright (C) 2009 Phillip Burgess
                Copyright (C) 2009 Thomas Fischl, Dominik Fisch (www.FundF.net)
 
@@ -33,9 +33,9 @@
 
 #include "mphidflash.h"
 
-unsigned char usbBufX[64];
-unsigned char * usbBuf = usbBufX;
-usb_dev_handle *usbdevice = NULL;
+unsigned char   usbBufX[64];
+unsigned char   *usbBuf = usbBufX;
+usb_dev_handle  *usbdevice = NULL;
 
 ErrorCode usbOpen(
   const unsigned short vendorID,
@@ -53,7 +53,7 @@ ErrorCode usbOpen(
             if (dev->descriptor.idVendor == vendorID && dev->descriptor.idProduct == productID) {
 
                 usbdevice = usb_open(dev);
-                if (!usbdevice) {                    
+                if (!usbdevice) {
                     fprintf(stderr, "Warning: matching device found, but cannot open usb device: %s\n", usb_strerror());
                     continue;
                 }
@@ -67,7 +67,7 @@ ErrorCode usbOpen(
                         usbdevice = NULL;
                         fprintf(stderr, "Warning: cannot claim interface: %s\n", usb_strerror());
                         continue;
-                    }                        
+                    }
                 }
 
                 return ERR_NONE;
@@ -76,7 +76,6 @@ ErrorCode usbOpen(
     }
 
     return ERR_DEVICE_NOT_FOUND;
-
 }
 
 ErrorCode usbWrite(
@@ -93,9 +92,9 @@ ErrorCode usbWrite(
     if (read) {
 
         bytesRead = usb_interrupt_read(usbdevice, 0x81, usbBuf, 64, 5000);
-		if (bytesRead < 0)
-			return ERR_USB_READ;
-	}
+        if (bytesRead < 0)
+            return ERR_USB_READ;
+    }
 
     return ERR_NONE;
 }

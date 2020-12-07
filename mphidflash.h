@@ -11,7 +11,7 @@
                2010-12-28  Petr Olivka
                  * program and verify only data for defined memory areas
                  * send only even length of data to PIC
-               
+
  License     : Copyright (C) 2009 Phillip Burgess
                Copyright (C) 2009 Thomas Fischl, Dominik Fisch (www.FundF.net)
                Copyright (C) 2010 Petr Olivka
@@ -69,8 +69,8 @@
 /* Values derived from Microchip HID Bootloader source */
 
 /* Bootloader commands */
-#define	QUERY_DEVICE      0x02
-#define	UNLOCK_CONFIG     0x03
+#define    QUERY_DEVICE      0x02
+#define    UNLOCK_CONFIG     0x03
 #define ERASE_DEVICE      0x04
 #define PROGRAM_DEVICE    0x05
 #define PROGRAM_COMPLETE  0x06
@@ -97,37 +97,37 @@
 
 typedef enum
 {
-	ERR_NONE = 0,        /* Success (non-error) */
-	ERR_CMD_ARG,
-	ERR_CMD_UNKNOWN,
-	ERR_DEVICE_NOT_FOUND,
-	ERR_USB_INIT1,
-	ERR_USB_INIT2,
-	ERR_USB_OPEN,
-	ERR_USB_WRITE,
-	ERR_USB_READ,
-	ERR_HEX_OPEN,
-	ERR_HEX_STAT,
-	ERR_HEX_MMAP,
-	ERR_HEX_SYNTAX,
-	ERR_HEX_CHECKSUM,
-	ERR_HEX_RECORD,
-	ERR_VERIFY,
-	ERR_EOL              /* End-of-list, not actual error code */
+    ERR_NONE = 0,        /* Success (non-error) */
+    ERR_CMD_ARG,
+    ERR_CMD_UNKNOWN,
+    ERR_DEVICE_NOT_FOUND,
+    ERR_USB_INIT1,
+    ERR_USB_INIT2,
+    ERR_USB_OPEN,
+    ERR_USB_WRITE,
+    ERR_USB_READ,
+    ERR_HEX_OPEN,
+    ERR_HEX_STAT,
+    ERR_HEX_MMAP,
+    ERR_HEX_SYNTAX,
+    ERR_HEX_CHECKSUM,
+    ERR_HEX_RECORD,
+    ERR_VERIFY,
+    ERR_EOL              /* End-of-list, not actual error code */
 } ErrorCode;
 
 
 /* Function prototypes */
 
 extern ErrorCode
-	hexOpen(char * const),
-	hexWrite(const char),
-	usbOpen(const unsigned short,const unsigned short),
-	usbWrite(const char,const char);
+    hexOpen(char * const),
+    hexWrite(const char),
+    usbOpen(const unsigned short,const unsigned short),
+    usbWrite(const char,const char);
 extern void
-	hexClose(void),
-	usbClose(void),
-	hexSetBytesPerAddress(unsigned char);
+    hexClose(void),
+    usbClose(void),
+    hexSetBytesPerAddress(unsigned char);
 extern unsigned char hexGetBytesPerAddress(void);
 
 #pragma pack( push )
