@@ -1,6 +1,6 @@
 /****************************************************************************
  File        : usb-windows.c
- Description : Encapsulates all nonportable, Linux-specific USB I/O code
+ Description : Encapsulates all nonportable, Windows-specific USB I/O code
                within the mphidflash program.  Each supported operating
                system has its own source file, providing a common calling
                syntax to the portable sections of the code.
@@ -33,14 +33,21 @@
 
  ****************************************************************************/
 
+//#define __CRT__NO_INLINE
+#define __CRT_STRSAFE_IMPL
 #include <stdio.h>
 #include <windows.h>
 #include <setupapi.h>
 #include <strsafe.h>
 #if !defined (_MSC_VER)
 // headers are distributed with mingw compiler
+#if __GNUC__ >= 5
+#include <hidsdi.h>
+#include <hidpi.h>
+#else
 #include <ddk/hidsdi.h>
 #include <ddk/hidpi.h>
+#endif
 #else
 // MS Visual C
 // headers from the Device (driver) Development Kit, fixup paths for your system
@@ -70,12 +77,12 @@
 #undef STRINGIZE2
 #endif
 
-HANDLE usbdevhandle = INVALID_HANDLE_VALUE;
-unsigned char        usbBufX[65];
-unsigned char *      usbBuf = &usbBufX[1];
+HANDLE                  usbdevhandle = INVALID_HANDLE_VALUE;
+unsigned char           usbBufX[65];
+unsigned char *         usbBuf = &usbBufX[1];
 
-HIDP_CAPS       Capabilities;
-PHIDP_PREPARSED_DATA        HidParsedData;
+HIDP_CAPS               Capabilities;
+PHIDP_PREPARSED_DATA    HidParsedData;
 
 // private to file
 static ErrorCode tryUsbOpen(
@@ -87,101 +94,101 @@ ErrorCode usbOpen(
   const unsigned short vendorID,
   const unsigned short productID)
 {
-	ErrorCode   status = ERR_DEVICE_NOT_FOUND;
-	unsigned    tries;
-	const unsigned  max_tries = 6;
-	const DWORD delay_ms = 100;
+    ErrorCode   status = ERR_DEVICE_NOT_FOUND;
+    unsigned    tries;
+    const unsigned  max_tries = 6;
+    const DWORD delay_ms = 100;
 
-	/* first try after connecting often fails, whilst Windows initializes device */
-	for (tries = 0; (tries < max_tries) && (ERR_DEVICE_NOT_FOUND == status); tries++) {
-		if (tries != 0)
-			Sleep(delay_ms); // ms
-		status = tryUsbOpen(vendorID, productID);
-	}
+    /* first try after connecting often fails, whilst Windows initializes device */
+    for (tries = 0; (tries < max_tries) && (ERR_DEVICE_NOT_FOUND == status); tries++) {
+        if (tries != 0)
+            Sleep(delay_ms); // ms
+        status = tryUsbOpen(vendorID, productID);
+    }
 
 #ifdef DEBUG
-	if ((ERR_NONE == status) && tries)
-		(void)printf("\nSuccess opening Bootloader after %u ms", tries * delay_ms);
+    if ((ERR_NONE == status) && tries)
+        (void)printf("\nSuccess opening Bootloader after %u ms", tries * delay_ms);
 #endif
-	return status;
+    return status;
 }
 
 ErrorCode tryUsbOpen(
   const unsigned short vendorID,
   const unsigned short productID)
 {
-	ErrorCode                           status = ERR_DEVICE_NOT_FOUND;
-	int i;
-	GUID                                hidGuid;
-	HDEVINFO                            deviceInfoList;
-	SP_DEVICE_INTERFACE_DATA            deviceInfo;
-	SP_DEVICE_INTERFACE_DETAIL_DATA     *deviceDetails = NULL;
-	DWORD                               size;
-	char                                pathPrefix[40];
-	int                                 prefixLength;
-	HRESULT hr;
+    ErrorCode                           status = ERR_DEVICE_NOT_FOUND;
+    int i;
+    GUID                                hidGuid;
+    HDEVINFO                            deviceInfoList;
+    SP_DEVICE_INTERFACE_DATA            deviceInfo;
+    SP_DEVICE_INTERFACE_DETAIL_DATA     *deviceDetails = NULL;
+    DWORD                               size;
+    char                                pathPrefix[40];
+    int                                 prefixLength;
+    HRESULT hr;
 
-	// expected start of DevicePath specifies the USB Vendor & Product Identities
-	hr = StringCchPrintf(pathPrefix, ARRAYSIZE(pathPrefix), "\\\\?\\hid#vid_%04x&pid_%04x#", vendorID, productID);
-	if (FAILED(hr)) {
-		fprintf(stderr, "internal error calling StringCchPrintf in " __FILE__ );
-		return ERR_USB_OPEN;
-	}
-	prefixLength = strlen(pathPrefix);
+    // expected start of DevicePath specifies the USB Vendor & Product Identities
+    hr = StringCchPrintf(pathPrefix, ARRAYSIZE(pathPrefix), "\\\\?\\hid#vid_%04x&pid_%04x#", vendorID, productID);
+    if (FAILED(hr)) {
+        fprintf(stderr, "internal error calling StringCchPrintf in " __FILE__ );
+        return ERR_USB_OPEN;
+    }
+    prefixLength = strlen(pathPrefix);
 
-	HidD_GetHidGuid(&hidGuid);
-	deviceInfoList = SetupDiGetClassDevs(&hidGuid, NULL, NULL, DIGCF_PRESENT | DIGCF_INTERFACEDEVICE);
+    HidD_GetHidGuid(&hidGuid);
+    deviceInfoList = SetupDiGetClassDevs(&hidGuid, NULL, NULL, DIGCF_PRESENT | DIGCF_INTERFACEDEVICE);
 
-	if (INVALID_HANDLE_VALUE == deviceInfoList)
-		return status; // no HID devices connected
+    if (INVALID_HANDLE_VALUE == deviceInfoList)
+        return status; // no HID devices connected
 
-	deviceInfo.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
+    deviceInfo.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 
-	for (i = 0; SetupDiEnumDeviceInterfaces(deviceInfoList, 0, &hidGuid, i, &deviceInfo); i++) {
+    for (i = 0; SetupDiEnumDeviceInterfaces(deviceInfoList, 0, &hidGuid, i, &deviceInfo); i++) {
 
-		/* get size for detail structure */
-		SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, NULL, 0, &size, NULL);
-		if (deviceDetails != NULL)
-			free(deviceDetails);
-		deviceDetails = (SP_DEVICE_INTERFACE_DETAIL_DATA*) malloc(size);
-		deviceDetails->cbSize = sizeof(*deviceDetails);
+        /* get size for detail structure */
+        SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, NULL, 0, &size, NULL);
+        if (deviceDetails != NULL)
+            free(deviceDetails);
+        deviceDetails = (SP_DEVICE_INTERFACE_DETAIL_DATA*) malloc(size);
+        deviceDetails->cbSize = sizeof(*deviceDetails);
 
-		/* now get details */
-		SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, deviceDetails, size, &size, NULL);
+        /* now get details */
+        SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, deviceDetails, size, &size, NULL);
 
-		/* check for expected USB VID & PID in device path before opening device */
-		if (strncasecmp(deviceDetails->DevicePath, pathPrefix, prefixLength)) {
-			continue;
-		}
+        /* check for expected USB VID & PID in device path before opening device */
+        if (strncasecmp(deviceDetails->DevicePath, pathPrefix, prefixLength)) {
+            continue;
+        }
 
-		/* try to open device */
-		usbdevhandle = CreateFile(deviceDetails->DevicePath, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-		if (usbdevhandle == INVALID_HANDLE_VALUE) {
-			fprintf(stderr, "Warning: matching device found, but cannot open usb device. (System Error %u)\n", GetLastError());
-			/* cannot open device, go to next */
-			status = ERR_USB_OPEN;
-			continue;
-		}
+        /* try to open device */
+        usbdevhandle = CreateFile(deviceDetails->DevicePath, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+        if (usbdevhandle == INVALID_HANDLE_VALUE) {
+            fprintf(stderr, "Warning: matching device found, but cannot open usb device. (System Error %u)\n", GetLastError());
+            /* cannot open device, go to next */
+            status = ERR_USB_OPEN;
+            continue;
+        }
 
-		HidD_GetPreparsedData(usbdevhandle, &HidParsedData);
+        HidD_GetPreparsedData(usbdevhandle, &HidParsedData);
 
-		/* extract the capabilities info */
-		HidP_GetCaps(HidParsedData ,&Capabilities);
+        /* extract the capabilities info */
+        HidP_GetCaps(HidParsedData ,&Capabilities);
 
-		/* Free the memory allocated when getting the preparsed data */
-		HidD_FreePreparsedData(HidParsedData);
+        /* Free the memory allocated when getting the preparsed data */
+        HidD_FreePreparsedData(HidParsedData);
 
-		/* okay, here we found our device */
-		status = ERR_NONE;
-		break;
-	}
+        /* okay, here we found our device */
+        status = ERR_NONE;
+        break;
+    }
 
-	SetupDiDestroyDeviceInfoList(deviceInfoList);
+    SetupDiDestroyDeviceInfoList(deviceInfoList);
 
-	if (deviceDetails != NULL)
-		free(deviceDetails);
+    if (deviceDetails != NULL)
+        free(deviceDetails);
 
-	return status;
+    return status;
 }
 
 
@@ -190,53 +197,53 @@ ErrorCode usbWrite(
   const char read)
 {
 
-	BOOLEAN rval = 0;
-	DWORD   bytesWritten = 0;
-	DWORD   bytesRead = 0;
+    BOOLEAN rval = 0;
+    DWORD   bytesWritten = 0;
+    DWORD   bytesRead = 0;
 
 #ifdef DEBUG
-	int i;
-	(void)puts("Sending:");
-	for(i=0;i<8;i++) (void)printf("%02x ",((unsigned char *)usbBuf)[i]);
-	(void)printf(": ");
-	for(;i<64;i++) (void)printf("%02x ",((unsigned char *)usbBuf)[i]);
-	(void)putchar('\n'); fflush(stdout);
-	DEBUGMSG("\nAbout to write");
-	printf("usbdevhandle: %d, usbBuf: %d, len: %d, %d\n", usbdevhandle, usbBuf, len, Capabilities.OutputReportByteLength);
+    int i;
+    (void)puts("Sending:");
+    for(i=0;i<8;i++) (void)printf("%02x ",((unsigned char *)usbBuf)[i]);
+    (void)printf(": ");
+    for(;i<64;i++) (void)printf("%02x ",((unsigned char *)usbBuf)[i]);
+    (void)putchar('\n'); fflush(stdout);
+    DEBUGMSG("\nAbout to write");
+    printf("usbdevhandle: %d, usbBuf: %d, len: %d, %d\n", usbdevhandle, usbBuf, len, Capabilities.OutputReportByteLength);
 #endif
 
 
-	/* report id */
-	usbBufX[0] = 0;
+    /* report id */
+    usbBufX[0] = 0;
 
-	if (WriteFile(usbdevhandle, usbBufX, Capabilities.OutputReportByteLength, &bytesWritten, 0) == 0) {
-//		printf("usb write failed, Error %u\n", GetLastError());
+    if (WriteFile(usbdevhandle, usbBufX, Capabilities.OutputReportByteLength, &bytesWritten, 0) == 0) {
+//        printf("usb write failed, Error %u\n", GetLastError());
 
-		return ERR_USB_WRITE;
-	}
+        return ERR_USB_WRITE;
+    }
 
-	DEBUGMSG("Done w/write");
+    DEBUGMSG("Done w/write");
 
 
-	if (read) {
-		if (ReadFile(usbdevhandle, usbBufX, Capabilities.OutputReportByteLength, &bytesRead, 0) == 0) {
-//			printf("usb read failed, Error %u\n", GetLastError());
-			return ERR_USB_READ;
-		}
+    if (read) {
+        if (ReadFile(usbdevhandle, usbBufX, Capabilities.OutputReportByteLength, &bytesRead, 0) == 0) {
+//            printf("usb read failed, Error %u\n", GetLastError());
+            return ERR_USB_READ;
+        }
 
 #ifdef DEBUG
-		(void)puts("Done reading\nReceived:");
-		for(i=0;i<8;i++) (void)printf("%02x ",usbBuf[i]);
-		(void)printf(": ");
-		for(;i<64;i++) (void)printf("%02x ",usbBuf[i]);
-		(void)putchar('\n'); fflush(stdout);
+        (void)puts("Done reading\nReceived:");
+        for(i=0;i<8;i++) (void)printf("%02x ",usbBuf[i]);
+        (void)printf(": ");
+        for(;i<64;i++) (void)printf("%02x ",usbBuf[i]);
+        (void)putchar('\n'); fflush(stdout);
 #endif
-	}
+    }
 
-	return ERR_NONE;
+    return ERR_NONE;
 }
 
 void usbClose(void)
 {
-	CloseHandle(usbdevhandle);
+    CloseHandle(usbdevhandle);
 }

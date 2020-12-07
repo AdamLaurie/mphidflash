@@ -16,7 +16,7 @@ ifeq ($(shell uname -s),Darwin)
 else
 # Rules for Linux, etc.
   OBJS    += usb-libusb.o
-  CFLAGS   = -O3 
+  CFLAGS   = -O3
   LDFLAGS  = -lusb
   SYSTEM = linux
 endif
@@ -24,7 +24,7 @@ endif
 CFLAGS += -DVERSION_MAIN=$(VERSION_MAIN) -DVERSION_SUB=$(VERSION_SUB)
 #CFLAGS += -DDEBUG
 
-all: 
+all:
 	@echo
 	@echo Please make 'mphidflash32' or 'mphidflash64' for 32 or 64 bit version
 	@echo
@@ -39,7 +39,7 @@ mphidflash64: LDFLAGS += -m64
 mphidflash64: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-$(SYSTEM)-64
 mphidflash64: mphidflash
 
-mphidflash32: CFLAGS += -m32 
+mphidflash32: CFLAGS += -m32
 mphidflash32: LDFLAGS += -m32
 mphidflash32: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-$(SYSTEM)-32
 mphidflash32: mphidflash
@@ -50,7 +50,7 @@ mphidflash: $(OBJS)
 
 install:
 	@echo
-	@echo Please make 'install32 or install64' to install 32 or 64 bit target
+	@echo Please make 'install32' or 'install64' to install 32 or 64 bit target
 	@echo
 
 # Must install as root; e.g. 'sudo make install'
@@ -81,4 +81,22 @@ zipfile:
 src-zipfile:
 	rm -f $(DISTPATH)/mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-src.zip
 	zip $(DISTPATH)/mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-src.zip README.txt CHANGELOG COPYING Makefile* *.c *.h
+
+
+cross: windows
+
+win: windows
+
+windows:
+	make -f Makefile.win
+
+win32: mingw32
+
+mingw32:
+	make -f Makefile.win mphidflash32
+
+win64: mingw64
+
+mingw64:
+	make -f Makefile.win mphidflash64
 

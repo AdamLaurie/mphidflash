@@ -12,11 +12,11 @@
                2010-12-28  Petr Olivka
                  * program and verify only data for defined memory areas
                  * send only even length of data to PIC
-               
+
  License     : Copyright (C) 2009 Phillip Burgess
                Copyright (C) 2009 Thomas Fischl, Dominik Fisch (www.FundF.net)
                Copyright (C) 2010 Petr Olivka
-               
+
                This file is part of 'mphidflash' program.
 
                'mphidflash' is free software: you can redistribute it and/or
@@ -41,8 +41,9 @@
 #include <errno.h>
 
 static HIDInterface *hid = NULL;
-unsigned char        usbBufX[64];
-unsigned char       * usbBuf = usbBufX;
+
+unsigned char       usbBufX[64];
+unsigned char       *usbBuf = usbBufX;
 
 /****************************************************************************
  Function    : usbOpen
@@ -66,32 +67,32 @@ ErrorCode usbOpen(
   const unsigned short vendorID,
   const unsigned short productID)
 {
-	ErrorCode           status = ERR_USB_INIT1;
-	HIDInterfaceMatcher matcher;
+    ErrorCode           status = ERR_USB_INIT1;
+    HIDInterfaceMatcher matcher;
 
-	matcher.vendor_id  = vendorID;
-	matcher.product_id = productID;
-	matcher.matcher_fn = NULL;
+    matcher.vendor_id  = vendorID;
+    matcher.product_id = productID;
+    matcher.matcher_fn = NULL;
 
-	if (debugLevel >= DEBUG_USB) {
-		hid_set_debug(HID_DEBUG_ALL);
-		hid_set_usb_debug(HID_DEBUG_ALL);
-	}
+    if (debugLevel >= DEBUG_USB) {
+        hid_set_debug(HID_DEBUG_ALL);
+        hid_set_usb_debug(HID_DEBUG_ALL);
+    }
 
-	if(HID_RET_SUCCESS == hid_init()) {
-		status = ERR_USB_INIT2;
-		if((hid = hid_new_HIDInterface())) {
-			if(HID_RET_SUCCESS ==
-			  hid_force_open(hid,0,&matcher,3)) {
-				return ERR_NONE;
-			}
-			status = ERR_DEVICE_NOT_FOUND;
-			hid_delete_HIDInterface(&hid);
-		}
-		hid_cleanup();
-	}
+    if(HID_RET_SUCCESS == hid_init()) {
+        status = ERR_USB_INIT2;
+        if((hid = hid_new_HIDInterface())) {
+            if(HID_RET_SUCCESS ==
+              hid_force_open(hid,0,&matcher,3)) {
+                return ERR_NONE;
+            }
+            status = ERR_DEVICE_NOT_FOUND;
+            hid_delete_HIDInterface(&hid);
+        }
+        hid_cleanup();
+    }
 
-	return status;
+    return status;
 }
 
 /****************************************************************************
@@ -111,34 +112,34 @@ ErrorCode usbWrite(
   const char read)
 {
 #ifdef DEBUG
-	int i;
-	(void)puts("Sending:");
-	for(i=0;i<8;i++) (void)printf("%02x ",((unsigned char *)usbBuf)[i]);
-	(void)printf(": ");
-	for(;i<64;i++) (void)printf("%02x ",((unsigned char *)usbBuf)[i]);
-	(void)putchar('\n'); fflush(stdout);
-	DEBUGMSG("\nAbout to write");
+    int i;
+    (void)puts("Sending:");
+    for(i=0;i<8;i++) (void)printf("%02x ",((unsigned char *)usbBuf)[i]);
+    (void)printf(": ");
+    for(;i<64;i++) (void)printf("%02x ",((unsigned char *)usbBuf)[i]);
+    (void)putchar('\n'); fflush(stdout);
+    DEBUGMSG("\nAbout to write");
 #endif
 
-	if(HID_RET_SUCCESS != hid_interrupt_write(hid,0x01,usbBuf,len,0))
-		return ERR_USB_WRITE;
+    if(HID_RET_SUCCESS != hid_interrupt_write(hid,0x01,usbBuf,len,0))
+        return ERR_USB_WRITE;
 
-	DEBUGMSG("Done w/write");
+    DEBUGMSG("Done w/write");
 
-	if(read) {
-		DEBUGMSG("About to read");
-		if(HID_RET_SUCCESS != hid_interrupt_read(hid,0x81,usbBuf,64,0))
-			return ERR_USB_READ;
+    if(read) {
+        DEBUGMSG("About to read");
+        if(HID_RET_SUCCESS != hid_interrupt_read(hid,0x81,usbBuf,64,0))
+            return ERR_USB_READ;
 #ifdef DEBUG
-		(void)puts("Done reading\nReceived:");
-		for(i=0;i<8;i++) (void)printf("%02x ",usbBuf[i]);
-		(void)printf(": ");
-		for(;i<64;i++) (void)printf("%02x ",usbBuf[i]);
-		(void)putchar('\n'); fflush(stdout);
+        (void)puts("Done reading\nReceived:");
+        for(i=0;i<8;i++) (void)printf("%02x ",usbBuf[i]);
+        (void)printf(": ");
+        for(;i<64;i++) (void)printf("%02x ",usbBuf[i]);
+        (void)putchar('\n'); fflush(stdout);
 #endif
-	}
+    }
 
-	return ERR_NONE;
+    return ERR_NONE;
 }
 
 /****************************************************************************
@@ -151,8 +152,8 @@ ErrorCode usbWrite(
  ****************************************************************************/
 void usbClose(void)
 {
-	(void)hid_close(hid);
-	hid_delete_HIDInterface(&hid);
-	(void)hid_cleanup();
-	hid = NULL;
+    (void)hid_close(hid);
+    hid_delete_HIDInterface(&hid);
+    (void)hid_cleanup();
+    hid = NULL;
 }
