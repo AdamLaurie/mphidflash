@@ -24,11 +24,11 @@ Building and Installing
 
 Linux
 -----
-For Linux, you'll need the 'libhid' development library (and associated
+For Linux, you'll need the 'libusb' development library (and associated
 dependencies) installed, which can be handled by most package managers or
 from the command line:
 
-	sudo apt-get install libhid-dev
+	sudo apt-get install libusb-dev
 
 Assuming you're reading this as the README.txt alongside the source code,
 to compile mphidflash for a 32 or 64 bit system, in the Terminal window type:
@@ -49,6 +49,35 @@ Then install with the command:
 
 This will copy the appropriate executable to /usr/local/bin/mphidflash so you 
 don't need to specify a complete path to the program each time.
+
+
+Building for Raspberry Pi (and other arm devices)
+-----
+To cross compile from x86/amd64 Linux to and ARM Linux, first install the 
+compiler : 
+
+	sudo apt install gcc-8-arm-linux-gnueabi
+
+Then, add the armel achitecture to your systems :
+
+	sudo dpkg --add-architecture armel
+
+Update the list of package :
+
+	sudo apt update
+
+Install the dependencies
+
+	sudo apt install libusb-dev:armel
+
+Launch the compilation :
+
+	make mphidflash-armel
+
+Note: libusb-dev:armel and libusb-dev can't be installed together. 
+Installing libusb-dev:armel will remove libusb-dev from your systems. You may
+want to re-install it after the compilation for arm devices.
+
 
 
 Mac OS X

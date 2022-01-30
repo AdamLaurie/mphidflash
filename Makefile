@@ -22,7 +22,7 @@ else
 endif
 
 CFLAGS += -DVERSION_MAIN=$(VERSION_MAIN) -DVERSION_SUB=$(VERSION_SUB)
-#CFLAGS += -DDEBUG
+CFLAGS += -DDEBUG
 
 all: 
 	@echo
@@ -39,6 +39,16 @@ mphidflash64: LDFLAGS += -m64
 mphidflash64: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-$(SYSTEM)-64
 mphidflash64: mphidflash
 
+mphidflash-armel: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-armel
+mphidflash-armel: CC = arm-linux-gnueabi-gcc-8
+mphidflash-armel: LDFLAGS += -L=/usr/lib/arm-linux-gnueabi/
+mphidflash-armel: mphidflash
+
+mphidflash-armhf: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-armhf
+mphidflash-armhf: CC = arm-linux-gnueabihf-gcc-8
+mphidflash-armhf: LDFLAGS += -L=/usr/lib/arm-linux-gnueabihf/
+mphidflash-armhf: mphidflash
+
 mphidflash32: CFLAGS += -m32 
 mphidflash32: LDFLAGS += -m32
 mphidflash32: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-$(SYSTEM)-32
@@ -46,7 +56,6 @@ mphidflash32: mphidflash
 
 mphidflash: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS) -o $(EXECPATH)/$(EXEC)
-	$(STRIP) $(EXECPATH)/$(EXEC)
 
 install:
 	@echo
