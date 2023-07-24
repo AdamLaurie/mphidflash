@@ -1,7 +1,8 @@
 VERSION_MAIN = 1
 VERSION_SUB  = 8
 
-CC    = i586-mingw32msvc-gcc
+CC    = x86_64-w64-mingw32-gcc
+#CC    = i586-mingw32msvc-gcc
 EXECS = mphidflash.exe
 OBJS  = main.o hex.o usb-windows.o
 CFLAGS = -DWIN -DVERSION_MAIN=$(VERSION_MAIN) -DVERSION_SUB=$(VERSION_SUB)

@@ -26,7 +26,11 @@ CFLAGS += -DVERSION_MAIN=$(VERSION_MAIN) -DVERSION_SUB=$(VERSION_SUB)
 
 all: 
 	@echo
-	@echo Please make 'mphidflash32' or 'mphidflash64' for 32 or 64 bit version
+	@echo Please make 
+	@echo - 'mphidflash32' for i386 version
+	@echo - 'mphidflash64' for amd64 version
+	@echo - 'mphidflash-armel' for armel version
+	@echo - 'mphidflash-armhf' for armhf version
 	@echo
 
 *.o: mphidflash.h
@@ -39,6 +43,16 @@ mphidflash64: LDFLAGS += -m64
 mphidflash64: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-$(SYSTEM)-64
 mphidflash64: mphidflash
 
+mphidflash-armel: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-armel
+mphidflash-armel: CC = arm-linux-gnueabi-gcc-10
+mphidflash-armel: LDFLAGS += -L=/usr/lib/arm-linux-gnueabi/
+mphidflash-armel: mphidflash
+
+mphidflash-armhf: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-armhf
+mphidflash-armhf: CC = arm-linux-gnueabihf-gcc-10
+mphidflash-armhf: LDFLAGS += -L=/usr/lib/arm-linux-gnueabihf/
+mphidflash-armhf: mphidflash
+
 mphidflash32: CFLAGS += -m32 
 mphidflash32: LDFLAGS += -m32
 mphidflash32: EXEC = mphidflash-$(VERSION_MAIN).$(VERSION_SUB)-$(SYSTEM)-32
@@ -46,7 +60,10 @@ mphidflash32: mphidflash
 
 mphidflash: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS) -o $(EXECPATH)/$(EXEC)
-	$(STRIP) $(EXECPATH)/$(EXEC)
+	if [ "$(CFLAGS)" = *"-m64"* ] || [ "$(CFLAGS)" = *"-m32"* ] ; then \
+		$(STRIP) $(EXECPATH)/$(EXEC) ;\
+	fi
+
 
 install:
 	@echo
